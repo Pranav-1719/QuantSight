@@ -2,7 +2,7 @@
 // Institutional Macroeconomic Calendar & News Feed
 // Features: CPI, FOMC, NFP, GDP, PMI with ACTUAL, PREDICTED (FORECAST), PREVIOUS, and Vivid Impact Colors
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import type { NewsItem } from '@/types'
 
@@ -38,6 +38,29 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
   const [macroFilter, setMacroFilter] = useState<string>('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'HIGH' | 'MED' | 'LOW'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Auto-sync currency filter whenever active symbol changes
+  useEffect(() => {
+    if (!currentSymbol) return
+    const sym = currentSymbol.toUpperCase()
+    if (sym.includes('JPY')) {
+      setCurrFilter('JPY')
+    } else if (sym.includes('EUR')) {
+      setCurrFilter('EUR')
+    } else if (sym.includes('GBP')) {
+      setCurrFilter('GBP')
+    } else if (sym.includes('INR') || sym.endsWith('.NS') || sym.includes('^NSEI') || sym.includes('^BSESN')) {
+      setCurrFilter('INR')
+    } else if (sym.includes('BTC') || sym.includes('ETH')) {
+      setCurrFilter('BTC')
+    } else if (sym.includes('=F') || sym.includes('GC=') || sym.includes('CL=')) {
+      setCurrFilter('COMMODITY')
+    } else if (sym.includes('USD')) {
+      setCurrFilter('USD')
+    } else {
+      setCurrFilter('ALL')
+    }
+  }, [currentSymbol])
 
   // Derive active symbol currencies
   const activeCurrencies: string[] = []
@@ -167,6 +190,22 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
             </button>
           ))}
         </div>
+
+        {/* Active Currency Sync Notification */}
+        {currFilter !== 'ALL' && (
+          <div className="flex items-center justify-between px-2.5 py-1 bg-zinc-900 border border-zinc-800 text-2xs">
+            <div className="flex items-center gap-1.5 text-zinc-300">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>SYNCED WITH CURRENCY: <strong className="text-white">{currFilter}</strong></span>
+            </div>
+            <button
+              onClick={() => setCurrFilter('ALL')}
+              className="text-zinc-400 hover:text-white underline font-bold text-3xs"
+            >
+              SHOW ALL
+            </button>
+          </div>
+        )}
 
         {/* Currency Filter Tabs Bar (USD, JPY, EUR, etc.) */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">

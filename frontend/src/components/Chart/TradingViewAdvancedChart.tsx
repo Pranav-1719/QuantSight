@@ -13,6 +13,8 @@ interface Props {
   interval: string
   stochKColor?: string
   stochDColor?: string
+  candleUpColor?: string
+  candleDownColor?: string
 }
 
 // Map yfinance tickers to TradingView symbols
@@ -63,6 +65,8 @@ export default function TradingViewAdvancedChart({
   interval,
   stochKColor = '#ffffff',
   stochDColor = '#a1a1aa',
+  candleUpColor = '#ffffff',
+  candleDownColor = '#000000',
 }: Props) {
   const containerId = 'tradingview_actual_chart_container'
   const tvSymbol =
@@ -76,14 +80,31 @@ export default function TradingViewAdvancedChart({
   const containerRef = useRef<HTMLDivElement>(null)
   const lastSymbolRef = useRef<string>('')
   const lastIntervalRef = useRef<string>('')
+  const lastUpColorRef = useRef<string>('')
+  const lastDownColorRef = useRef<string>('')
+
+  // Derive border and wick colors for contrast against dark background
+  const isDarkDown =
+    candleDownColor.toLowerCase() === '#000000' ||
+    candleDownColor.toLowerCase() === '#09090b' ||
+    candleDownColor.toLowerCase() === '#18181b'
+  const downBorderColor = isDarkDown ? '#ffffff' : candleDownColor
+  const downWickColor = isDarkDown ? '#ffffff' : candleDownColor
 
   useEffect(() => {
-    // Keep user customizations intact: do not re-init if symbol and interval have not changed
-    if (lastSymbolRef.current === tvSymbol && lastIntervalRef.current === tvInterval) {
+    // Keep user customizations intact: do not re-init if symbol, interval, and colors have not changed
+    if (
+      lastSymbolRef.current === tvSymbol &&
+      lastIntervalRef.current === tvInterval &&
+      lastUpColorRef.current === candleUpColor &&
+      lastDownColorRef.current === candleDownColor
+    ) {
       return
     }
     lastSymbolRef.current = tvSymbol
     lastIntervalRef.current = tvInterval
+    lastUpColorRef.current = candleUpColor
+    lastDownColorRef.current = candleDownColor
 
     const initWidget = () => {
       if (typeof (window as any).TradingView === 'undefined') return
@@ -146,30 +167,30 @@ export default function TradingViewAdvancedChart({
           'paneProperties.horzGridProperties.color': '#141416',
           'scalesProperties.textColor': '#a1a1aa',
           'scalesProperties.lineColor': '#27272a',
-          // BLACK AND WHITE CANDLESTICKS
-          'mainSeriesProperties.candleStyle.upColor': '#ffffff',
-          'mainSeriesProperties.candleStyle.downColor': '#000000',
+          // CUSTOMIZABLE CANDLESTICKS (Default: Crisp B&W)
+          'mainSeriesProperties.candleStyle.upColor': candleUpColor,
+          'mainSeriesProperties.candleStyle.downColor': candleDownColor,
           'mainSeriesProperties.candleStyle.drawWick': true,
           'mainSeriesProperties.candleStyle.drawBorder': true,
-          'mainSeriesProperties.candleStyle.borderColor': '#ffffff',
-          'mainSeriesProperties.candleStyle.borderUpColor': '#ffffff',
-          'mainSeriesProperties.candleStyle.borderDownColor': '#ffffff',
-          'mainSeriesProperties.candleStyle.wickUpColor': '#ffffff',
-          'mainSeriesProperties.candleStyle.wickDownColor': '#ffffff',
+          'mainSeriesProperties.candleStyle.borderColor': downBorderColor,
+          'mainSeriesProperties.candleStyle.borderUpColor': candleUpColor,
+          'mainSeriesProperties.candleStyle.borderDownColor': downBorderColor,
+          'mainSeriesProperties.candleStyle.wickUpColor': candleUpColor,
+          'mainSeriesProperties.candleStyle.wickDownColor': downWickColor,
           // Hollow Candles style
-          'mainSeriesProperties.hollowCandleStyle.upColor': '#ffffff',
-          'mainSeriesProperties.hollowCandleStyle.downColor': '#000000',
-          'mainSeriesProperties.hollowCandleStyle.borderUpColor': '#ffffff',
-          'mainSeriesProperties.hollowCandleStyle.borderDownColor': '#ffffff',
-          'mainSeriesProperties.hollowCandleStyle.wickUpColor': '#ffffff',
-          'mainSeriesProperties.hollowCandleStyle.wickDownColor': '#ffffff',
+          'mainSeriesProperties.hollowCandleStyle.upColor': candleUpColor,
+          'mainSeriesProperties.hollowCandleStyle.downColor': candleDownColor,
+          'mainSeriesProperties.hollowCandleStyle.borderUpColor': candleUpColor,
+          'mainSeriesProperties.hollowCandleStyle.borderDownColor': downBorderColor,
+          'mainSeriesProperties.hollowCandleStyle.wickUpColor': candleUpColor,
+          'mainSeriesProperties.hollowCandleStyle.wickDownColor': downWickColor,
           // Heikin Ashi style
-          'mainSeriesProperties.haStyle.upColor': '#ffffff',
-          'mainSeriesProperties.haStyle.downColor': '#000000',
-          'mainSeriesProperties.haStyle.borderUpColor': '#ffffff',
-          'mainSeriesProperties.haStyle.borderDownColor': '#ffffff',
-          'mainSeriesProperties.haStyle.wickUpColor': '#ffffff',
-          'mainSeriesProperties.haStyle.wickDownColor': '#ffffff',
+          'mainSeriesProperties.haStyle.upColor': candleUpColor,
+          'mainSeriesProperties.haStyle.downColor': candleDownColor,
+          'mainSeriesProperties.haStyle.borderUpColor': candleUpColor,
+          'mainSeriesProperties.haStyle.borderDownColor': downBorderColor,
+          'mainSeriesProperties.haStyle.wickUpColor': candleUpColor,
+          'mainSeriesProperties.haStyle.wickDownColor': downWickColor,
         },
       })
     }
@@ -184,7 +205,7 @@ export default function TradingViewAdvancedChart({
     } else {
       initWidget()
     }
-  }, [tvSymbol, tvInterval])
+  }, [tvSymbol, tvInterval, candleUpColor, candleDownColor, stochKColor, stochDColor])
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-black flex flex-col">

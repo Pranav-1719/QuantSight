@@ -27,6 +27,8 @@ interface MainChartProps {
   strategy:   StrategyResult | undefined
   livePrice:  number | null
   decimals?:  number
+  candleUpColor?:   string
+  candleDownColor?: string
   onCrosshairTime?: (time: number | null) => void
   onChartReady?: (chart: IChartApi) => void
 }
@@ -67,6 +69,8 @@ export default function MainChart({
   strategy,
   livePrice,
   decimals = 5,
+  candleUpColor = '#ffffff',
+  candleDownColor = '#18181b',
   onChartReady,
 }: MainChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -78,6 +82,13 @@ export default function MainChart({
   const slLineRef    = useRef<ReturnType<ISeriesApi<'Candlestick'>['createPriceLine']> | null>(null)
   const tpLineRef    = useRef<ReturnType<ISeriesApi<'Candlestick'>['createPriceLine']> | null>(null)
   const entryLineRef = useRef<ReturnType<ISeriesApi<'Candlestick'>['createPriceLine']> | null>(null)
+
+  const isDarkDown =
+    candleDownColor.toLowerCase() === '#000000' ||
+    candleDownColor.toLowerCase() === '#09090b' ||
+    candleDownColor.toLowerCase() === '#18181b'
+  const downBorder = isDarkDown ? '#a1a1aa' : candleDownColor
+  const downWick = isDarkDown ? '#a1a1aa' : candleDownColor
 
   // Pixel coordinates for the TradingView Long/Short Position Box plotted on the chart
   const [boxCoords, setBoxCoords] = useState<{
@@ -197,13 +208,13 @@ export default function MainChart({
       lineSeriesRef.current = ls
     } else {
       const cs = chart.addCandlestickSeries({
-        upColor:        THEME.bull,
-        downColor:      THEME.bear,
+        upColor:        candleUpColor,
+        downColor:      candleDownColor,
         borderVisible:  true,
-        borderUpColor:  THEME.bullBorder,
-        borderDownColor:THEME.bearBorder,
-        wickUpColor:    THEME.bullWick,
-        wickDownColor:  THEME.bearWick,
+        borderUpColor:  candleUpColor,
+        borderDownColor:downBorder,
+        wickUpColor:    candleUpColor,
+        wickDownColor:  downWick,
         priceLineVisible: false,
       })
       cs.setData(
@@ -239,7 +250,21 @@ export default function MainChart({
     setTimeout(updateBoxCoordinates, 50)
     setTimeout(updateBoxCoordinates, 250)
     setTimeout(updateBoxCoordinates, 600)
-  }, [candles, chartType, ema50, updateBoxCoordinates])
+  }, [candles, chartType, ema50, candleUpColor, candleDownColor, updateBoxCoordinates])
+
+  // Update candlestick colors dynamically if changed
+  useEffect(() => {
+    if (candleSeriesRef.current) {
+      candleSeriesRef.current.applyOptions({
+        upColor: candleUpColor,
+        downColor: candleDownColor,
+        borderUpColor: candleUpColor,
+        borderDownColor: downBorder,
+        wickUpColor: candleUpColor,
+        wickDownColor: downWick,
+      })
+    }
+  }, [candleUpColor, candleDownColor, downBorder, downWick])
 
   // ── SL / TP / Entry price lines ──
   useEffect(() => {

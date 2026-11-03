@@ -11,6 +11,7 @@ interface Props {
   mtf?: MTFResult | undefined
   symbol: string
   currentPrice: number | null
+  decimals?: number
   onLogSuccess?: () => void
 }
 
@@ -19,6 +20,7 @@ export default function StepsPanel({
   mtf,
   symbol,
   currentPrice,
+  decimals = 5,
   onLogSuccess,
 }: Props) {
   const [logging, setLogging] = useState(false)
@@ -67,7 +69,7 @@ export default function StepsPanel({
         lot_size: 1.0,
         ai_verdict: strategy.ai_confirmation?.verdict ?? 'STRATEGY_SIGNAL',
         ai_confidence: strategy.ai_confirmation?.confidence ?? 80,
-        strategy_notes: `50 EMA + StochRSI Step Execution: %K=${stochK.toFixed(1)}, %D=${stochD.toFixed(1)}, EMA50=${ema50.toFixed(4)}, HA=${strategy.ha_pattern?.pattern || 'Standard'}.`,
+        strategy_notes: `50 EMA + StochRSI Step Execution: %K=${stochK.toFixed(1)}, %D=${stochD.toFixed(1)}, EMA50=${ema50.toFixed(decimals)}, HA=${strategy.ha_pattern?.pattern || 'Standard'}.`,
       })
       setLoggedMsg(`Logged ${isBuy ? 'BUY' : 'SELL'} order to Journal`)
       setTimeout(() => setLoggedMsg(null), 3500)
@@ -97,7 +99,7 @@ export default function StepsPanel({
     {
       num: 3,
       title: '50 EMA Pullback & Support/Resistance',
-      desc: `Price at ${entry.toFixed(4)} vs 50 EMA ${ema50.toFixed(4)}. Distance: ${(Math.abs(entry - ema50) / atr).toFixed(2)}× ATR (tolerance ≤ 0.8× ATR).`,
+      desc: `Price at ${entry.toFixed(decimals)} vs 50 EMA ${ema50.toFixed(decimals)}. Distance: ${(Math.abs(entry - ema50) / atr).toFixed(2)}× ATR (tolerance ≤ 0.8× ATR).`,
       status: step3_ema_passed ? 'READY' : 'WAITING',
       badge: strategy.near_ema ? 'AT 50 EMA' : strategy.price_above_ema ? 'ABOVE EMA' : 'BELOW EMA',
     },
@@ -122,7 +124,7 @@ export default function StepsPanel({
     {
       num: 6,
       title: 'Risk-to-Reward Execution Setup',
-      desc: `SL: ${sl.toFixed(4)} (1.5× ATR buffer) | TP: ${tp.toFixed(4)} | Reward/Risk: 1:${rr.toFixed(1)} (Min 1:2.0 enforced).`,
+      desc: `SL: ${sl.toFixed(decimals)} (1.5× ATR buffer) | TP: ${tp.toFixed(decimals)} | Reward/Risk: 1:${rr.toFixed(1)} (Min 1:2.0 enforced).`,
       status: step6_rr_passed ? 'READY' : 'CALCULATING',
       badge: `1:${rr.toFixed(1)} R:R`,
     },

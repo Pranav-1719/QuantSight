@@ -18,6 +18,7 @@ import Header from '@/components/Layout/Header'
 import SidebarBox from '@/components/Layout/SidebarBox'
 import ChartToolbar from '@/components/Chart/ChartToolbar'
 import TradingViewAdvancedChart from '@/components/Chart/TradingViewAdvancedChart'
+import OnChartCallOverlay from '@/components/Chart/OnChartCallOverlay'
 import DrawingToolbar from '@/components/Chart/DrawingToolbar'
 import DrawingOverlay from '@/components/Chart/DrawingOverlay'
 import MainChart from '@/components/Chart/MainChart'
@@ -44,6 +45,10 @@ export default function App() {
   // ── Chart Engine: Actual TradingView Advanced Chart vs QuantSight Overlay ──
   const [chartEngine, setChartEngine] = useState<'tradingview' | 'quantsight'>('tradingview')
 
+  // ── Customizable Candlestick Colors (Up & Down) ──
+  const [candleUpColor, setCandleUpColor] = useState<string>('#ffffff')
+  const [candleDownColor, setCandleDownColor] = useState<string>('#000000')
+
   // ── Customizable Stochastic Indicator Colors (%K and %D) ──
   const [stochKColor, setStochKColor] = useState<string>('#ffffff')
   const [stochDColor, setStochDColor] = useState<string>('#a1a1aa')
@@ -54,6 +59,14 @@ export default function App() {
   const [period, setPeriod] = useState<string>(DEFAULT_INTERVAL.period)
   const [chartType, setChartType] = useState<ChartType>('candlestick')
   const [mainChart, setMainChart] = useState<IChartApi | null>(null)
+
+  // ── Currency / Symbol Switcher with Instant Query Invalidation ──
+  const handleSymbolChange = (newSymbol: SymbolConfig) => {
+    setSymbol(newSymbol)
+    qc.invalidateQueries({ queryKey: ['ohlcv', newSymbol.ticker] })
+    qc.invalidateQueries({ queryKey: ['strategy', newSymbol.ticker] })
+    qc.invalidateQueries({ queryKey: ['mtf', newSymbol.ticker] })
+  }
 
   // ── Drawing Toolbar State (for Custom Engine) ──
   const [activeTool, setActiveTool] = useState<DrawingTool>('cursor')
@@ -197,6 +210,7 @@ export default function App() {
             strategy={strategy}
             symbol={symbol.ticker}
             currentPrice={livePrice?.price ?? null}
+            decimals={symbol.decimals}
             onLogSuccess={handleRefresh}
           />
         )
@@ -218,6 +232,7 @@ export default function App() {
               mtf={mtf}
               symbol={symbol.ticker}
               currentPrice={livePrice?.price ?? null}
+              decimals={symbol.decimals}
               onLogSuccess={handleRefresh}
             />
           </div>
@@ -288,7 +303,7 @@ export default function App() {
         symbol={symbol}
         livePrice={livePrice}
         interval={interval}
-        onSymbol={setSymbol}
+        onSymbol={handleSymbolChange}
         onInterval={handleInterval}
         onRefresh={handleRefresh}
         isLoading={isLoading}
@@ -323,70 +338,91 @@ export default function App() {
                 setStochKColor(k)
                 setStochDColor(d)
               }}
+              candleUpColor={candleUpColor}
+              candleDownColor={candleDownColor}
+              onChangeCandleColors={(up, down) => {
+                setCandleUpColor(up)
+                setCandleDownColor(down)
+              }}
             />
 
             {/* Main Chart Area */}
-            {chartEngine === 'tradingview' ? (
-              // ── ACTUAL OFFICIAL TRADINGVIEW ADVANCED REAL-TIME CHART ──
-              <div className="flex-1 min-h-0 relative bg-black">
-                <TradingViewAdvancedChart
-                  symbolTicker={symbol.ticker}
-                  interval={interval}
-                  stochKColor={stochKColor}
-                  stochDColor={stochDColor}
-                />
-              </div>
-            ) : (
-              // ── CUSTOM QUANTSIGHT STRATEGY ENGINE WITH PLOTTED POSITION BOX ──
-              <div className="flex-1 flex flex-col min-h-0 relative">
-                <div className="flex-1 flex min-h-0 relative">
-                  <DrawingToolbar
-                    activeTool={activeTool}
-                    onSelectTool={setActiveTool}
-                    onClear={handleClearDrawings}
-                    onUndo={handleUndoDrawing}
-                    drawingCount={drawings.length}
+            <div className="flex-1 min-h-0 relative bg-black flex flex-col">
+              {chartEngine === 'tradingview' ? (
+                // ── ACTUAL OFFICIAL TRADINGVIEW ADVANCED REAL-TIME CHART ──
+                <div className="flex-1 min-h-0 relative bg-black">
+                  <TradingViewAdvancedChart
+                    symbolTicker={symbol.ticker}
+                    interval={interval}
+                    stochKColor={stochKColor}
+                    stochDColor={stochDColor}
+                    candleUpColor={candleUpColor}
+                    candleDownColor={candleDownColor}
                   />
-
-                  <div className="flex-1 relative min-h-0 bg-black overflow-hidden">
-                    <MainChart
-                      candles={candles}
-                      ema50={ema50}
-                      chartType={chartType}
-                      strategy={strategy}
-                      livePrice={livePrice?.price ?? null}
-                      decimals={symbol.decimals}
-                      onChartReady={setMainChart}
-                    />
-
-                    <DrawingOverlay
+                </div>
+              ) : (
+                // ── CUSTOM QUANTSIGHT STRATEGY ENGINE WITH PLOTTED POSITION BOX ──
+                <div className="flex-1 flex flex-col min-h-0 relative">
+                  <div className="flex-1 flex min-h-0 relative">
+                    <DrawingToolbar
                       activeTool={activeTool}
-                      drawings={drawings}
-                      onAddDrawing={handleAddDrawing}
-                      onToolUsed={() => {
-                        if (activeTool === 'horizontal') setActiveTool('cursor')
-                      }}
+                      onSelectTool={setActiveTool}
+                      onClear={handleClearDrawings}
+                      onUndo={handleUndoDrawing}
+                      drawingCount={drawings.length}
                     />
-                  </div>
-                </div>
 
-                <div className="h-32 border-t border-border flex-shrink-0 bg-black flex">
-                  <div className="w-10 bg-zinc-950 border-r border-zinc-900 flex-shrink-0 flex items-center justify-center">
-                    <span className="text-[9px] text-zinc-600 -rotate-90 whitespace-nowrap font-bold tracking-widest">
-                      STOCH RSI
-                    </span>
+                    <div className="flex-1 relative min-h-0 bg-black overflow-hidden">
+                      <MainChart
+                        candles={candles}
+                        ema50={ema50}
+                        chartType={chartType}
+                        strategy={strategy}
+                        livePrice={livePrice?.price ?? null}
+                        decimals={symbol.decimals}
+                        candleUpColor={candleUpColor}
+                        candleDownColor={candleDownColor}
+                        onChartReady={setMainChart}
+                      />
+
+                      <DrawingOverlay
+                        activeTool={activeTool}
+                        drawings={drawings}
+                        onAddDrawing={handleAddDrawing}
+                        onToolUsed={() => {
+                          if (activeTool === 'horizontal') setActiveTool('cursor')
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <StochRSIChart
-                      data={stochrsi}
-                      mainChart={mainChart}
-                      kColor={stochKColor}
-                      dColor={stochDColor}
-                    />
+
+                  <div className="h-32 border-t border-border flex-shrink-0 bg-black flex">
+                    <div className="w-10 bg-zinc-950 border-r border-zinc-900 flex-shrink-0 flex items-center justify-center">
+                      <span className="text-[9px] text-zinc-600 -rotate-90 whitespace-nowrap font-bold tracking-widest">
+                        STOCH RSI
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <StochRSIChart
+                        data={stochrsi}
+                        mainChart={mainChart}
+                        kColor={stochKColor}
+                        dColor={stochDColor}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* ── ON-CHART SL, TP & CALL HUD OVERLAY (Always visible on chart canvas) ── */}
+              <OnChartCallOverlay
+                strategy={strategy}
+                symbol={symbol}
+                currentPrice={livePrice?.price ?? null}
+                decimals={symbol.decimals}
+                onLogSuccess={handleRefresh}
+              />
+            </div>
           </div>
 
           {/* ─── RESIZABLE SPLIT GRIP (Between Left Chart and Right Sidebar) ─── */}
@@ -470,6 +506,7 @@ export default function App() {
                     strategy={strategy}
                     symbol={symbol.ticker}
                     currentPrice={livePrice?.price ?? null}
+                    decimals={symbol.decimals}
                     onLogSuccess={handleRefresh}
                   />
                   <div>
@@ -502,6 +539,7 @@ export default function App() {
                     mtf={mtf}
                     symbol={symbol.ticker}
                     currentPrice={livePrice?.price ?? null}
+                    decimals={symbol.decimals}
                     onLogSuccess={handleRefresh}
                   />
                 </div>

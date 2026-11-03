@@ -2,7 +2,7 @@
 // QuantConnect PcaStatArbitrageAlgorithm Implementation
 // Demeaned Log-Prices, 3-Component PCA, statsmodels OLS Residual Z-Score Rebalancing
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import clsx from 'clsx'
 import type { StrategyResult, StatArbTargetPosition } from '@/types'
 import { useStatArbUniverse } from '@/hooks/useData'
@@ -27,6 +27,12 @@ export default function StatArbPanel({ strategy, category, currentSymbol, onLogS
   const [activeCategory, setActiveCategory] = useState<string>(initialCat)
   const [logging, setLogging] = useState(false)
   const [loggedMsg, setLoggedMsg] = useState<string | null>(null)
+
+  // Auto-sync category when user changes active symbol or category
+  useEffect(() => {
+    const cat = CATEGORY_MAP[category] || 'US_Top20'
+    setActiveCategory(cat)
+  }, [category, currentSymbol])
 
   const { data: statarbData, isLoading, refetch } = useStatArbUniverse(activeCategory)
   const symbolData = strategy?.statarb?.symbol_data

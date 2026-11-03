@@ -10,6 +10,7 @@ interface Props {
   strategy: StrategyResult | undefined
   symbol: string
   currentPrice: number | null
+  decimals?: number
   onLogSuccess?: () => void
 }
 
@@ -17,6 +18,7 @@ export default function LiveCallBox({
   strategy,
   symbol,
   currentPrice,
+  decimals = 5,
   onLogSuccess,
 }: Props) {
   const [logging, setLogging] = useState(false)
@@ -25,7 +27,7 @@ export default function LiveCallBox({
   if (!strategy) {
     return (
       <div className="p-4 text-center text-zinc-500 font-mono text-xs animate-pulse">
-        Awaiting live signal evaluation...
+        Awaiting live signal evaluation for {symbol}...
       </div>
     )
   }
@@ -65,7 +67,7 @@ export default function LiveCallBox({
         lot_size: 1.0,
         ai_verdict: strategy.ai_confirmation?.verdict || 'CONFIRMED_SIGNAL',
         ai_confidence: strategy.ai_confirmation?.confidence || 80,
-        strategy_notes: `Current Call Execution: ${isBuy ? 'BUY' : 'SELL'} @ ${entry.toFixed(5)} | SL: ${sl.toFixed(5)} | TP: ${tp.toFixed(5)} | R:R 1:${rr.toFixed(1)} | EMA: ${strategy.ema50.toFixed(4)}`,
+        strategy_notes: `Current Call Execution: ${isBuy ? 'BUY' : 'SELL'} @ ${entry.toFixed(decimals)} | SL: ${sl.toFixed(decimals)} | TP: ${tp.toFixed(decimals)} | R:R 1:${rr.toFixed(1)} | EMA: ${strategy.ema50.toFixed(decimals)}`,
       })
       setLoggedMsg(`✓ Logged ${isBuy ? 'BUY' : 'SELL'} Call to Journal`)
       setTimeout(() => setLoggedMsg(null), 3000)
@@ -80,6 +82,17 @@ export default function LiveCallBox({
   return (
     <div className="bg-black text-xs font-mono select-none">
       <div className="p-3 space-y-3">
+        {/* Active Currency Bar */}
+        <div className="flex items-center justify-between px-2.5 py-1 bg-zinc-950 border border-zinc-800 text-2xs">
+          <div className="flex items-center gap-1.5 text-zinc-300">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>ACTIVE CURRENCY: <strong className="text-white text-xs">{symbol}</strong></span>
+          </div>
+          <span className="text-zinc-500 font-bold uppercase">
+            {isBuy ? 'LONG CALL' : isSell ? 'SHORT CALL' : 'STANDBY'}
+          </span>
+        </div>
+
         {/* ── 1. MAIN LARGE ACTION DIRECTIVE BADGE ── */}
         <div
           className={clsx(
@@ -130,7 +143,7 @@ export default function LiveCallBox({
               </span>
               <span className="text-xs font-semibold text-zinc-200">
                 {isProfit ? '+' : ''}
-                {pnlDiff.toFixed(5)}
+                {pnlDiff.toFixed(decimals)}
               </span>
             </div>
           )}
@@ -147,10 +160,10 @@ export default function LiveCallBox({
               <span className="text-2xs text-zinc-400 font-bold">OPEN</span>
             </div>
             <div className="text-base font-black text-white mt-1.5 font-mono">
-              {entry.toFixed(5)}
+              {entry.toFixed(decimals)}
             </div>
             <div className="text-xs text-zinc-400 mt-0.5 font-medium">
-              Live: {live.toFixed(5)}
+              Live: {live.toFixed(decimals)}
             </div>
           </div>
 
@@ -163,10 +176,10 @@ export default function LiveCallBox({
               <span className="text-xs text-emerald-400 font-bold">+{strategy.tp_pct.toFixed(2)}%</span>
             </div>
             <div className="text-base font-black text-emerald-300 mt-1.5 font-mono">
-              {tp.toFixed(5)}
+              {tp.toFixed(decimals)}
             </div>
             <div className="text-xs text-emerald-400 font-bold mt-0.5">
-              +{strategy.reward.toFixed(5)}
+              +{strategy.reward.toFixed(decimals)}
             </div>
           </div>
 
@@ -179,10 +192,10 @@ export default function LiveCallBox({
               <span className="text-xs text-red-400 font-bold">−{strategy.sl_pct.toFixed(2)}%</span>
             </div>
             <div className="text-base font-black text-red-300 mt-1.5 font-mono">
-              {sl.toFixed(5)}
+              {sl.toFixed(decimals)}
             </div>
             <div className="text-xs text-red-400 font-bold mt-0.5">
-              −{strategy.risk.toFixed(5)}
+              −{strategy.risk.toFixed(decimals)}
             </div>
           </div>
         </div>
@@ -200,11 +213,11 @@ export default function LiveCallBox({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 bg-red-600 text-white font-black text-2xs">
+            <span className="px-2 py-0.5 bg-white text-black font-black text-2xs">
               50 EMA
             </span>
-            <span className="text-sm font-bold text-red-400 font-mono">
-              {strategy.ema50.toFixed(5)}
+            <span className="text-sm font-bold text-white font-mono">
+              {strategy.ema50.toFixed(decimals)}
             </span>
           </div>
         </div>
@@ -222,14 +235,14 @@ export default function LiveCallBox({
                       TARGET (PROFIT)
                     </span>
                     <div className="text-base font-black text-emerald-300 mt-1">
-                      {tp.toFixed(5)} (+{strategy.tp_pct.toFixed(2)}%)
+                      {tp.toFixed(decimals)} (+{strategy.tp_pct.toFixed(2)}%)
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="px-2 py-0.5 text-xs font-bold bg-emerald-900 border border-emerald-400 text-white">
                       R:R 1:{rr.toFixed(1)}
                     </span>
-                    <div className="text-xs text-emerald-400 mt-1 font-bold">+{strategy.reward.toFixed(5)} Gain</div>
+                    <div className="text-xs text-emerald-400 mt-1 font-bold">+{strategy.reward.toFixed(decimals)} Gain</div>
                   </div>
                 </div>
 
@@ -242,7 +255,7 @@ export default function LiveCallBox({
                     <span className="text-white font-bold text-xs">OPEN POSITION</span>
                   </div>
                   <span className="text-base font-black text-white font-mono">
-                    {entry.toFixed(5)}
+                    {entry.toFixed(decimals)}
                   </span>
                 </div>
 
@@ -253,14 +266,14 @@ export default function LiveCallBox({
                       STOP LOSS (RISK)
                     </span>
                     <div className="text-base font-black text-red-300 mt-1">
-                      {sl.toFixed(5)} (−{strategy.sl_pct.toFixed(2)}%)
+                      {sl.toFixed(decimals)} (−{strategy.sl_pct.toFixed(2)}%)
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="px-2 py-0.5 text-xs font-bold bg-red-900 border border-red-400 text-white">
                       1.5× ATR SL
                     </span>
-                    <div className="text-xs text-red-400 mt-1 font-bold">−{strategy.risk.toFixed(5)} Risk</div>
+                    <div className="text-xs text-red-400 mt-1 font-bold">−{strategy.risk.toFixed(decimals)} Risk</div>
                   </div>
                 </div>
               </div>
@@ -274,14 +287,14 @@ export default function LiveCallBox({
                       STOP LOSS (RISK)
                     </span>
                     <div className="text-base font-black text-red-300 mt-1">
-                      {sl.toFixed(5)} (+{strategy.sl_pct.toFixed(2)}%)
+                      {sl.toFixed(decimals)} (+{strategy.sl_pct.toFixed(2)}%)
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="px-2 py-0.5 text-xs font-bold bg-red-900 border border-red-400 text-white">
                       1.5× ATR SL
                     </span>
-                    <div className="text-xs text-red-400 mt-1 font-bold">+{strategy.risk.toFixed(5)} Risk</div>
+                    <div className="text-xs text-red-400 mt-1 font-bold">+{strategy.risk.toFixed(decimals)} Risk</div>
                   </div>
                 </div>
 
@@ -294,7 +307,7 @@ export default function LiveCallBox({
                     <span className="text-white font-bold text-xs">OPEN POSITION</span>
                   </div>
                   <span className="text-base font-black text-white font-mono">
-                    {entry.toFixed(5)}
+                    {entry.toFixed(decimals)}
                   </span>
                 </div>
 
@@ -305,14 +318,14 @@ export default function LiveCallBox({
                       TARGET (PROFIT)
                     </span>
                     <div className="text-base font-black text-emerald-300 mt-1">
-                      {tp.toFixed(5)} (−{strategy.tp_pct.toFixed(2)}%)
+                      {tp.toFixed(decimals)} (−{strategy.tp_pct.toFixed(2)}%)
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="px-2 py-0.5 text-xs font-bold bg-emerald-900 border border-emerald-400 text-white">
                       R:R 1:{rr.toFixed(1)}
                     </span>
-                    <div className="text-xs text-emerald-400 mt-1 font-bold">−{strategy.reward.toFixed(5)} Gain</div>
+                    <div className="text-xs text-emerald-400 mt-1 font-bold">+{strategy.reward.toFixed(decimals)} Gain</div>
                   </div>
                 </div>
               </div>
