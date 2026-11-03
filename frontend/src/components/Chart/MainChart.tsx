@@ -96,7 +96,7 @@ export default function MainChart({
     slY: number
     tpY: number
   } | null>(null)
-  const [showPositionBox, setShowPositionBox] = useState(true)
+  const [showPositionBox, setShowPositionBox] = useState(false)
 
   // Determine direction: buy (long) or sell (short)
   const isBuy = strategy ? (strategy.signal?.includes('BUY') || strategy.tp > strategy.entry) : false
