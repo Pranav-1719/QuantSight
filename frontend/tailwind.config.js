@@ -33,7 +33,11 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        '2xs': ['0.625rem', { lineHeight: '0.875rem' }],
+        '3xs': ['0.6875rem', { lineHeight: '0.9rem' }], // 11px
+        '2xs': ['0.75rem', { lineHeight: '1.05rem' }],   // 12px (was 10px)
+        'xs':  ['0.8125rem', { lineHeight: '1.2rem' }],  // 13px (was 12px)
+        'sm':  ['0.9375rem', { lineHeight: '1.35rem' }], // 15px (was 14px)
+        'base': ['1rem', { lineHeight: '1.5rem' }],      // 16px
       },
     },
   },

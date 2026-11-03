@@ -121,7 +121,7 @@ export default function DrawingToolbar({
   ]
 
   return (
-    <div className="w-10 bg-zinc-950 border-r border-zinc-900 flex flex-col items-center py-2 space-y-1 z-20 flex-shrink-0 select-none">
+    <div className="w-12 bg-zinc-950 border-r border-zinc-900 flex flex-col items-center py-2.5 space-y-1.5 z-20 flex-shrink-0 select-none">
       {tools.map(tool => {
         const isActive = activeTool === tool.id
         return (
@@ -130,19 +130,19 @@ export default function DrawingToolbar({
             onClick={() => onSelectTool(tool.id)}
             title={tool.tooltip}
             className={clsx(
-              'w-8 h-8 rounded flex flex-col items-center justify-center transition-all relative group',
+              'w-9 h-9 rounded flex flex-col items-center justify-center transition-all relative group',
               isActive
                 ? 'bg-white text-black font-bold shadow-md'
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
             )}
           >
             {tool.icon}
-            <span className="text-[8px] leading-none mt-0.5 font-mono">{tool.label}</span>
+            <span className="text-[9px] leading-tight mt-0.5 font-mono font-bold">{tool.label}</span>
           </button>
         )
       })}
 
-      <div className="w-6 h-px bg-zinc-800 my-1" />
+      <div className="w-7 h-px bg-zinc-800 my-1" />
 
       {/* Undo Button */}
       <button
@@ -150,13 +150,13 @@ export default function DrawingToolbar({
         disabled={drawingCount === 0}
         title="Undo last drawing"
         className={clsx(
-          'w-8 h-8 rounded flex items-center justify-center transition-colors',
+          'w-9 h-9 rounded flex items-center justify-center transition-colors',
           drawingCount > 0
             ? 'text-zinc-400 hover:text-white hover:bg-zinc-900'
             : 'text-zinc-700 cursor-not-allowed'
         )}
       >
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M9 14L4 9l5-5" />
           <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
         </svg>
@@ -168,18 +168,18 @@ export default function DrawingToolbar({
         disabled={drawingCount === 0}
         title={`Clear all ${drawingCount} drawings`}
         className={clsx(
-          'w-8 h-8 rounded flex items-center justify-center transition-colors relative',
+          'w-9 h-9 rounded flex items-center justify-center transition-colors relative',
           drawingCount > 0
             ? 'text-zinc-400 hover:text-red-400 hover:bg-zinc-900'
             : 'text-zinc-700 cursor-not-allowed'
         )}
       >
-        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <polyline points="3 6 5 6 21 6" />
           <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
         </svg>
         {drawingCount > 0 && (
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-zinc-700 text-white rounded-full text-[8px] flex items-center justify-center font-mono">
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-zinc-700 text-white rounded-full text-[9px] font-bold flex items-center justify-center font-mono">
             {drawingCount}
           </span>
         )}

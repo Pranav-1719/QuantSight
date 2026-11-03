@@ -30,27 +30,27 @@ export default function ChartToolbar({
   onToggleEngine,
 }: ChartToolbarProps) {
   return (
-    <div className="flex items-center gap-3 px-3 py-1.5 border-b border-border bg-black flex-shrink-0 text-xs font-mono select-none">
+    <div className="flex items-center gap-3 px-3 py-2 border-b border-border bg-black flex-shrink-0 text-sm font-mono select-none">
       {/* Chart Engine Switcher */}
       {onToggleEngine && (
-        <div className="flex items-center gap-1 border-r border-border pr-3">
+        <div className="flex items-center gap-1.5 border-r border-border pr-3">
           <button
             onClick={() => onToggleEngine('tradingview')}
             className={clsx(
-              'px-2.5 py-1 text-2xs font-bold transition-all border flex items-center gap-1.5',
+              'px-3 py-1.5 text-xs font-bold transition-all border flex items-center gap-1.5',
               chartEngine === 'tradingview'
                 ? 'bg-white text-black border-white shadow-sm'
                 : 'bg-black text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700'
             )}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>ACTUAL TRADINGVIEW</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>TRADINGVIEW ADVANCED</span>
           </button>
 
           <button
             onClick={() => onToggleEngine('quantsight')}
             className={clsx(
-              'px-2 py-1 text-2xs font-bold transition-all border flex items-center gap-1.5',
+              'px-2.5 py-1.5 text-xs font-bold transition-all border flex items-center gap-1.5',
               chartEngine === 'quantsight'
                 ? 'bg-white text-black border-white shadow-sm'
                 : 'bg-black text-zinc-400 border-zinc-800 hover:text-white hover:border-zinc-700'
@@ -62,15 +62,15 @@ export default function ChartToolbar({
       )}
 
       {/* Interval buttons */}
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1">
         {INTERVALS.map(iv => (
           <button
             key={iv.value}
             onClick={() => onInterval(iv.value)}
             className={clsx(
-              'px-2 py-1 text-2xs font-mono font-medium transition-colors border',
+              'px-2.5 py-1 text-xs font-mono font-bold transition-colors border',
               interval === iv.value
-                ? 'bg-zinc-800 text-white border-zinc-600 font-bold'
+                ? 'bg-zinc-800 text-white border-zinc-600'
                 : 'bg-transparent text-zinc-500 border-transparent hover:text-white'
             )}
           >
@@ -83,13 +83,13 @@ export default function ChartToolbar({
         <>
           <div className="w-px h-4 bg-border" />
           {/* Chart type buttons */}
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             {CHART_TYPES.map(ct => (
               <button
                 key={ct.value}
                 onClick={() => onChartType(ct.value)}
                 className={clsx(
-                  'px-2.5 py-1 text-2xs font-mono font-medium transition-colors border',
+                  'px-3 py-1 text-xs font-mono font-bold transition-colors border',
                   chartType === ct.value
                     ? 'bg-white text-black border-white'
                     : 'bg-transparent text-zinc-500 border-transparent hover:text-white hover:border-border'
@@ -103,25 +103,25 @@ export default function ChartToolbar({
       )}
 
       {/* Active Indicators Legend */}
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-3.5">
         {isLoading && (
           <div className="flex items-center gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-2xs text-zinc-500 font-mono">SYNCING</span>
+            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+            <span className="text-xs text-zinc-400 font-mono font-bold">SYNCING</span>
           </div>
         )}
 
-        {/* 50 EMA Legend in RED */}
+        {/* 50 EMA Legend in WHITE */}
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-1 bg-red-500 rounded-sm" />
-          <span className="text-2xs text-red-400 font-bold font-mono">50 EMA</span>
+          <span className="w-3 h-1 bg-white rounded-sm" />
+          <span className="text-xs text-white font-bold font-mono">50 EMA</span>
         </div>
 
-        {/* Stochastic RSI Legend in White and Red */}
+        {/* Stochastic RSI Legend in White and Gray */}
         <div className="flex items-center gap-1.5">
-          <span className="w-2 h-1 bg-white rounded-sm" />
-          <span className="w-2 h-1 bg-red-500 rounded-sm" />
-          <span className="text-2xs text-zinc-300 font-mono">STOCH RSI (W/R)</span>
+          <span className="w-2.5 h-1 bg-white rounded-sm" />
+          <span className="w-2.5 h-1 bg-zinc-500 rounded-sm" />
+          <span className="text-xs text-zinc-300 font-mono font-bold">STOCH RSI (W/G)</span>
         </div>
       </div>
     </div>

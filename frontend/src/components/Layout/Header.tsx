@@ -45,13 +45,13 @@ export default function Header({
 
   return (
     <div
-      className="flex items-center gap-0 h-10 border-b border-border flex-shrink-0 relative z-50 bg-black font-mono text-xs select-none"
+      className="flex items-center gap-0 h-11 border-b border-border flex-shrink-0 relative z-50 bg-black font-mono text-sm select-none"
     >
       {/* Brand */}
-      <div className="flex items-center gap-2 px-3 h-full border-r border-border">
+      <div className="flex items-center gap-2 px-3.5 h-full border-r border-border">
         <div className="w-2.5 h-2.5 bg-white" />
-        <span className="font-bold tracking-widest text-white">QUANTSIGHT</span>
-        <span className="text-2xs text-zinc-500 hidden sm:inline">v2.1</span>
+        <span className="font-black text-sm tracking-widest text-white">QUANTSIGHT</span>
+        <span className="text-2xs text-zinc-400 hidden sm:inline font-bold">v2.5</span>
       </div>
 
       {/* Navigation: Terminal / Journal */}
@@ -59,7 +59,7 @@ export default function Header({
         <button
           onClick={() => onView('terminal')}
           className={clsx(
-            'px-3.5 h-full text-xs font-bold uppercase tracking-wider transition-colors border-r border-border',
+            'px-4 h-full text-xs font-bold uppercase tracking-wider transition-colors border-r border-border',
             view === 'terminal'
               ? 'bg-white text-black'
               : 'text-zinc-400 hover:text-white hover:bg-zinc-950'
@@ -70,7 +70,7 @@ export default function Header({
         <button
           onClick={() => onView('journal')}
           className={clsx(
-            'px-3.5 h-full text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5',
+            'px-4 h-full text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-2',
             view === 'journal'
               ? 'bg-white text-black'
               : 'text-zinc-400 hover:text-white hover:bg-zinc-950'
@@ -79,7 +79,7 @@ export default function Header({
           <span>JOURNAL</span>
           {openTradesCount > 0 && (
             <span className={clsx(
-              'px-1 py-0.2 text-2xs font-bold',
+              'px-1.5 py-0.2 text-2xs font-bold',
               view === 'journal' ? 'bg-black text-white' : 'bg-zinc-800 text-white'
             )}>
               {openTradesCount}
@@ -92,13 +92,13 @@ export default function Header({
       <div className="relative h-full">
         <button
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2.5 px-3 h-full border-r border-border hover:bg-zinc-950 transition-colors"
+          className="flex items-center gap-3 px-3.5 h-full border-r border-border hover:bg-zinc-950 transition-colors"
         >
           <div>
-            <div className="font-bold text-white text-xs">{symbol.label}</div>
-            <div className="text-2xs text-zinc-500 text-left">{symbol.category}</div>
+            <div className="font-black text-white text-sm">{symbol.label}</div>
+            <div className="text-2xs text-zinc-400 text-left font-bold">{symbol.category}</div>
           </div>
-          <span className="text-zinc-500 text-2xs">{open ? '▲' : '▼'}</span>
+          <span className="text-zinc-400 text-xs font-bold">{open ? '▲' : '▼'}</span>
         </button>
 
         {/* Dropdown */}
@@ -141,34 +141,34 @@ export default function Header({
       </div>
 
       {/* Live price quote */}
-      <div className="flex items-center gap-3 px-3 h-full border-r border-border">
+      <div className="flex items-center gap-3 px-3.5 h-full border-r border-border">
         <div>
-          <div className="font-bold text-sm text-white tracking-wider">
+          <div className="font-black text-base text-white tracking-wider">
             {price > 0 ? fmtPrice(price, decimals) : '—'}
           </div>
-          <div className="flex items-center gap-1.5 text-2xs text-zinc-400">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold">
             <span>{change !== 0 ? fmtChange(change, decimals) : '0.00'}</span>
             <span>({changePct !== 0 ? fmtPct(changePct) : '0.00%'})</span>
           </div>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 bg-white animate-pulse" />
-          <span className="text-2xs text-zinc-500">LIVE</span>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 bg-white animate-pulse" />
+          <span className="text-2xs text-zinc-400 font-bold">LIVE</span>
         </div>
       </div>
 
       {/* Interval quick select (Terminal mode only) */}
       {view === 'terminal' && (
-        <div className="hidden md:flex items-center h-full border-r border-border px-1.5 gap-0.5">
+        <div className="hidden md:flex items-center h-full border-r border-border px-2 gap-1">
           {INTERVALS.map(iv => (
             <button
               key={iv.value}
               onClick={() => onInterval(iv.value)}
               className={clsx(
-                'px-2 py-1 text-2xs transition-colors',
+                'px-2.5 py-1 text-xs font-bold transition-colors',
                 interval === iv.value
-                  ? 'bg-white text-black font-bold'
-                  : 'text-zinc-500 hover:text-white'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white'
               )}
             >
               {iv.label}

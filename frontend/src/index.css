@@ -12,6 +12,7 @@
     font-family: 'Inter', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
+    font-size: 15px; /* Larger base font for clear terminal readability */
   }
 
   ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -41,26 +42,26 @@
   }
 
   .panel-header {
-    padding: 7px 12px;
+    padding: 8px 12px;
     border-bottom: 1px solid #27272a;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: #71717a;
+    color: #a1a1aa;
     background: #000000;
   }
 
   .metric-label {
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: #71717a;
+    color: #a1a1aa;
   }
 
   .metric-value {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #ffffff;
   }
@@ -68,10 +69,10 @@
   .signal-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    gap: 5px;
+    padding: 3px 10px;
     border-radius: 0px;
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
