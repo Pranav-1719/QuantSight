@@ -25,7 +25,7 @@ const THEME = {
   border:  '#27272a',
   text:    '#71717a',
   k:       '#ffffff',    // %K line — pure white
-  d:       '#ef4444',    // %D line — vivid red
+  d:       '#71717a',    // %D line — monochrome gray
   ob:      'rgba(255, 255, 255, 0.02)',
   os:      'rgba(255, 255, 255, 0.02)',
   ob_line: '#3f3f46',
@@ -46,7 +46,7 @@ export default function StochRSIChart({ data, mainChart, onCrosshairTime }: Stoc
       layout: {
         background: { color: THEME.bg },
         textColor:  THEME.text,
-        fontSize:   10,
+        fontSize:   12,
         fontFamily: "'JetBrains Mono', monospace",
       },
       grid: {
@@ -157,11 +157,11 @@ export default function StochRSIChart({ data, mainChart, onCrosshairTime }: Stoc
     <div className="w-full h-full relative">
       {/* Labels */}
       <div className="absolute top-1 left-2 z-10 flex items-center gap-3 pointer-events-none">
-        <span className="text-2xs font-mono" style={{ color: THEME.text }}>STOCH RSI</span>
-        <span className="text-2xs font-mono" style={{ color: THEME.k }}>%K</span>
-        <span className="text-2xs font-mono" style={{ color: THEME.d }}>%D</span>
-        <span className="text-2xs font-mono" style={{ color: THEME.ob_line.replace('30','aa') }}>OB 80</span>
-        <span className="text-2xs font-mono" style={{ color: THEME.os_line.replace('30','aa') }}>OS 20</span>
+        <span className="text-xs font-mono font-bold" style={{ color: THEME.text }}>STOCH RSI</span>
+        <span className="text-xs font-mono font-bold" style={{ color: THEME.k }}>%K</span>
+        <span className="text-xs font-mono font-bold" style={{ color: THEME.d }}>%D</span>
+        <span className="text-xs font-mono font-bold" style={{ color: '#71717a' }}>OB 80</span>
+        <span className="text-xs font-mono font-bold" style={{ color: '#71717a' }}>OS 20</span>
       </div>
       <div ref={containerRef} className="w-full h-full" />
     </div>
