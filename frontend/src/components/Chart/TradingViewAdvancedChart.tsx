@@ -1,10 +1,10 @@
 // components/Chart/TradingViewAdvancedChart.tsx
-// Actual Full Official TradingView Advanced Real-Time Chart
-// Configured with:
+// Actual Official TradingView Advanced Real-Time Chart
 // - Black & White Candles (White Bullish, Black Bearish with White Wicks/Borders)
-// - 50 EMA in RED (#ef4444)
-// - Stochastic RSI in WHITE (%K) and RED (%D)
-// - Complete native TradingView drawing toolbar intact (Long/Short Position Box, Fib, Trendlines, etc.)
+// - 50 EMA in Pure WHITE (#ffffff) — strictly monochromatic, no red
+// - Stochastic RSI in WHITE (%K) and GRAY (%D)
+// - Volume in WHITE (Up Volume) and DARK GRAY/BLACK (Down Volume) with Gray MA
+// - Complete native TradingView drawing toolbar intact (Long/Short Position Box, Fib, etc.)
 
 import React, { useEffect, useRef } from 'react'
 
@@ -95,17 +95,31 @@ export default function TradingViewAdvancedChart({ symbolTicker, interval }: Pro
         studies: [
           'MASimple@tv-basicstudies',
           'StochasticRSI@tv-basicstudies',
+          'Volume@tv-basicstudies',
         ],
         studies_overrides: {
-          // 50 EMA in RED
+          // ── 50 EMA in Pure WHITE (strictly monochromatic, no red) ──
           'moving average.length': 50,
-          'moving average.plot.color': '#ef4444',
+          'moving average.plot.color': '#ffffff',
           'moving average.plot.linewidth': 2,
-          // Stochastic RSI: %K in WHITE, %D in RED
+
+          // ── Stochastic RSI: %K in WHITE, %D in GRAY ──
           'stochastic rsi.%k.color': '#ffffff',
-          'stochastic rsi.%d.color': '#ef4444',
+          'stochastic rsi.%k.linewidth': 2,
+          'stochastic rsi.%d.color': '#71717a',
+          'stochastic rsi.%d.linewidth': 1,
           'stochastic rsi.upper band.color': '#71717a',
+          'stochastic rsi.upper band.value': 80,
           'stochastic rsi.lower band.color': '#71717a',
+          'stochastic rsi.lower band.value': 20,
+          'stochastic rsi.middle band.color': '#3f3f46',
+
+          // ── Volume: Up Volume WHITE, Down Volume DARK GRAY/BLACK, MA GRAY ──
+          'volume.volume.color.0': '#27272a', // Down Volume = Dark Zinc
+          'volume.volume.color.1': '#ffffff', // Up Volume = White
+          'volume.volume.transparency': 35,
+          'volume.volume ma.color': '#a1a1aa', // Volume MA = Gray
+          'volume.volume ma.linewidth': 1,
         },
         overrides: {
           'paneProperties.background': '#000000',
