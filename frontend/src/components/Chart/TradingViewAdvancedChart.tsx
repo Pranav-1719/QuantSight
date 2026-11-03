@@ -11,6 +11,8 @@ import React, { useEffect, useRef } from 'react'
 interface Props {
   symbolTicker: string
   interval: string
+  stochKColor?: string
+  stochDColor?: string
 }
 
 // Map yfinance tickers to TradingView symbols
@@ -56,7 +58,12 @@ const TV_INTERVAL_MAP: Record<string, string> = {
   '1w': 'W',
 }
 
-export default function TradingViewAdvancedChart({ symbolTicker, interval }: Props) {
+export default function TradingViewAdvancedChart({
+  symbolTicker,
+  interval,
+  stochKColor = '#ffffff',
+  stochDColor = '#a1a1aa',
+}: Props) {
   const containerId = 'tradingview_actual_chart_container'
   const tvSymbol =
     TV_SYMBOL_MAP[symbolTicker] ||
@@ -103,16 +110,26 @@ export default function TradingViewAdvancedChart({ symbolTicker, interval }: Pro
           'moving average.plot.color': '#ffffff',
           'moving average.plot.linewidth': 2,
 
-          // ── Stochastic RSI: %K in WHITE, %D in GRAY ──
-          'stochastic rsi.%k.color': '#ffffff',
+          // ── Stochastic RSI Customizable Colors ──
+          'stochastic rsi.%k.color': stochKColor,
+          'stochastic rsi.k.color': stochKColor,
           'stochastic rsi.%k.linewidth': 2,
-          'stochastic rsi.%d.color': '#71717a',
-          'stochastic rsi.%d.linewidth': 1,
+          'stochastic rsi.k.linewidth': 2,
+          'stochastic rsi.%d.color': stochDColor,
+          'stochastic rsi.d.color': stochDColor,
+          'stochastic rsi.%d.linewidth': 2,
+          'stochastic rsi.d.linewidth': 2,
           'stochastic rsi.upper band.color': '#71717a',
           'stochastic rsi.upper band.value': 80,
           'stochastic rsi.lower band.color': '#71717a',
           'stochastic rsi.lower band.value': 20,
           'stochastic rsi.middle band.color': '#3f3f46',
+
+          // ── Stochastic (Standard) Customizable Colors ──
+          'stochastic.%k.color': stochKColor,
+          'stochastic.k.color': stochKColor,
+          'stochastic.%d.color': stochDColor,
+          'stochastic.d.color': stochDColor,
 
           // ── Volume: Up Volume WHITE, Down Volume DARK GRAY/BLACK, MA GRAY ──
           'volume.volume.color.0': '#27272a', // Down Volume = Dark Zinc
@@ -166,7 +183,7 @@ export default function TradingViewAdvancedChart({ symbolTicker, interval }: Pro
     } else {
       initWidget()
     }
-  }, [tvSymbol, tvInterval])
+  }, [tvSymbol, tvInterval, stochKColor, stochDColor])
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-black flex flex-col">

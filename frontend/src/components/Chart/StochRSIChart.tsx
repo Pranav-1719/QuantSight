@@ -17,6 +17,8 @@ interface StochRSIChartProps {
   data:         StochPoint[]
   mainChart?:   IChartApi | null   // for time-scale sync
   onCrosshairTime?: (time: number | null) => void
+  kColor?:      string
+  dColor?:      string
 }
 
 const THEME = {
@@ -25,18 +27,30 @@ const THEME = {
   border:  '#27272a',
   text:    '#71717a',
   k:       '#ffffff',    // %K line — pure white
-  d:       '#71717a',    // %D line — monochrome gray
+  d:       '#a1a1aa',    // %D line — monochrome gray
   ob:      'rgba(255, 255, 255, 0.02)',
   os:      'rgba(255, 255, 255, 0.02)',
   ob_line: '#3f3f46',
   os_line: '#3f3f46',
 }
 
-export default function StochRSIChart({ data, mainChart, onCrosshairTime }: StochRSIChartProps) {
+export default function StochRSIChart({
+  data,
+  mainChart,
+  onCrosshairTime,
+  kColor = '#ffffff',
+  dColor = '#a1a1aa',
+}: StochRSIChartProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const chartRef     = useRef<IChartApi | null>(null)
   const kSeriesRef   = useRef<ISeriesApi<'Line'> | null>(null)
   const dSeriesRef   = useRef<ISeriesApi<'Line'> | null>(null)
+
+  // Update dynamic colors
+  useEffect(() => {
+    if (kSeriesRef.current) kSeriesRef.current.applyOptions({ color: kColor })
+    if (dSeriesRef.current) dSeriesRef.current.applyOptions({ color: dColor })
+  }, [kColor, dColor])
 
   // ── Create chart ──
   useEffect(() => {
@@ -75,8 +89,8 @@ export default function StochRSIChart({ data, mainChart, onCrosshairTime }: Stoc
 
     // %K series
     const kSeries = chart.addLineSeries({
-      color:               THEME.k,
-      lineWidth:           1,
+      color:               kColor,
+      lineWidth:           2,
       priceLineVisible:    false,
       lastValueVisible:    true,
       title:               'K',
@@ -85,8 +99,8 @@ export default function StochRSIChart({ data, mainChart, onCrosshairTime }: Stoc
 
     // %D series
     const dSeries = chart.addLineSeries({
-      color:               THEME.d,
-      lineWidth:           1,
+      color:               dColor,
+      lineWidth:           2,
       lineStyle:           LineStyle.Dashed,
       priceLineVisible:    false,
       lastValueVisible:    true,
@@ -158,8 +172,8 @@ export default function StochRSIChart({ data, mainChart, onCrosshairTime }: Stoc
       {/* Labels */}
       <div className="absolute top-1 left-2 z-10 flex items-center gap-3 pointer-events-none">
         <span className="text-xs font-mono font-bold" style={{ color: THEME.text }}>STOCH RSI</span>
-        <span className="text-xs font-mono font-bold" style={{ color: THEME.k }}>%K</span>
-        <span className="text-xs font-mono font-bold" style={{ color: THEME.d }}>%D</span>
+        <span className="text-xs font-mono font-bold" style={{ color: kColor }}>%K</span>
+        <span className="text-xs font-mono font-bold" style={{ color: dColor }}>%D</span>
         <span className="text-xs font-mono font-bold" style={{ color: '#71717a' }}>OB 80</span>
         <span className="text-xs font-mono font-bold" style={{ color: '#71717a' }}>OS 20</span>
       </div>

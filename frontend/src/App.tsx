@@ -44,6 +44,10 @@ export default function App() {
   // ── Chart Engine: Actual TradingView Advanced Chart vs QuantSight Overlay ──
   const [chartEngine, setChartEngine] = useState<'tradingview' | 'quantsight'>('tradingview')
 
+  // ── Customizable Stochastic Indicator Colors (%K and %D) ──
+  const [stochKColor, setStochKColor] = useState<string>('#ffffff')
+  const [stochDColor, setStochDColor] = useState<string>('#a1a1aa')
+
   // ── Terminal State ──
   const [symbol, setSymbol] = useState<SymbolConfig>(DEFAULT_SYMBOL)
   const [interval, setTimeframe] = useState<Interval>(DEFAULT_INTERVAL.value)
@@ -313,6 +317,12 @@ export default function App() {
               isLoading={isLoading}
               chartEngine={chartEngine}
               onToggleEngine={setChartEngine}
+              stochKColor={stochKColor}
+              stochDColor={stochDColor}
+              onChangeStochColors={(k, d) => {
+                setStochKColor(k)
+                setStochDColor(d)
+              }}
             />
 
             {/* Main Chart Area */}
@@ -322,6 +332,8 @@ export default function App() {
                 <TradingViewAdvancedChart
                   symbolTicker={symbol.ticker}
                   interval={interval}
+                  stochKColor={stochKColor}
+                  stochDColor={stochDColor}
                 />
               </div>
             ) : (
@@ -365,7 +377,12 @@ export default function App() {
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <StochRSIChart data={stochrsi} mainChart={mainChart} />
+                    <StochRSIChart
+                      data={stochrsi}
+                      mainChart={mainChart}
+                      kColor={stochKColor}
+                      dColor={stochDColor}
+                    />
                   </div>
                 </div>
               </div>
