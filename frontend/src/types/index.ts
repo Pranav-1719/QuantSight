@@ -260,6 +260,26 @@ export interface NewsItem {
   desc:   string
   time:   string
   impact: 'HIGH' | 'MED' | 'LOW'
+  currency?: string
+  currencies?: string[]
+}
+
+export type DrawingTool =
+  | 'cursor'
+  | 'trendline'
+  | 'horizontal'
+  | 'fibonacci'
+  | 'rectangle'
+  | 'long_position'
+  | 'short_position'
+  | 'measure'
+
+export interface DrawingElement {
+  id: string
+  type: DrawingTool
+  points: { x: number; y: number }[]
+  color?: string
+  label?: string
 }
 
 export interface SymbolConfig {

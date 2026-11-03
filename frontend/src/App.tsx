@@ -1,20 +1,23 @@
-// App.tsx — QuantSight Professional Trading Terminal v2.1
+// App.tsx — QuantSight Professional Trading Terminal v2.2
 // Minimalist Black & White Monochromatic Bloomberg Terminal
-// Integrated AI Decision Confirmation, Self-Adapting Strategy, Trading Journal & PCA Stat-Arb
+// Integrated Drawing Toolbar, Left Chart Canvas, Right Steps & Currency News Feed
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import type { IChartApi } from 'lightweight-charts'
 
-import type { ChartType, Interval, SymbolConfig } from '@/types'
+import type { ChartType, Interval, SymbolConfig, DrawingTool, DrawingElement } from '@/types'
 import { SYMBOLS, INTERVALS } from '@/types'
 import { useOHLCV, useStrategy, useMTF, useNews, useLivePrice, useJournalStats } from '@/hooks/useData'
 
 import Header from '@/components/Layout/Header'
 import ChartToolbar from '@/components/Chart/ChartToolbar'
+import DrawingToolbar from '@/components/Chart/DrawingToolbar'
+import DrawingOverlay from '@/components/Chart/DrawingOverlay'
 import MainChart from '@/components/Chart/MainChart'
 import StochRSIChart from '@/components/Chart/StochRSIChart'
 import SignalPanel from '@/components/Panels/SignalPanel'
+import StepsPanel from '@/components/Panels/StepsPanel'
 import TradeCallPanel from '@/components/Panels/TradeCallPanel'
 import AIConfirmationPanel from '@/components/Panels/AIConfirmationPanel'
 import StatArbPanel from '@/components/Panels/StatArbPanel'
@@ -38,13 +41,33 @@ export default function App() {
   const [period, setPeriod] = useState<string>(DEFAULT_INTERVAL.period)
   const [chartType, setChartType] = useState<ChartType>('candlestick')
   const [mainChart, setMainChart] = useState<IChartApi | null>(null)
-  const [activeTab, setActiveTab] = useState<'signal' | 'ai' | 'trade' | 'statarb' | 'mtf' | 'steps'>('signal')
+
+  // ── Drawing Toolbar State ──
+  const [activeTool, setActiveTool] = useState<DrawingTool>('cursor')
+  const [drawings, setDrawings] = useState<DrawingElement[]>([])
+
+  // ── Right Sidebar Navigation ──
+  // 'split' shows Steps on top and News on bottom
+  const [activeTab, setActiveTab] = useState<'split' | 'steps' | 'news' | 'trade' | 'ai' | 'statarb' | 'mtf' | 'signal'>('split')
 
   // When interval changes, update period
   const handleInterval = (iv: Interval) => {
     setTimeframe(iv)
     const ivConfig = INTERVALS.find(i => i.value === iv)
     if (ivConfig) setPeriod(ivConfig.period)
+  }
+
+  // ── Drawing Handlers ──
+  const handleAddDrawing = (el: DrawingElement) => {
+    setDrawings(prev => [...prev, el])
+  }
+
+  const handleClearDrawings = () => {
+    setDrawings([])
+  }
+
+  const handleUndoDrawing = () => {
+    setDrawings(prev => prev.slice(0, -1))
   }
 
   // ── Data hooks ──
@@ -77,12 +100,13 @@ export default function App() {
   const openTradesCount = journalStatsQuery.data?.open_trades ?? 0
 
   const rightPanelTabs = [
-    { key: 'signal',  label: 'Signal'   },
-    { key: 'ai',      label: 'AI Eval'  },
-    { key: 'trade',   label: 'Trade'    },
-    { key: 'statarb', label: 'Stat-Arb' },
-    { key: 'mtf',     label: 'MTF'      },
-    { key: 'steps',   label: 'Logic'    },
+    { key: 'split',   label: 'STEPS + NEWS' },
+    { key: 'steps',   label: 'STEPS'        },
+    { key: 'news',    label: 'NEWS'         },
+    { key: 'trade',   label: 'TRADE'        },
+    { key: 'ai',      label: 'AI EVAL'      },
+    { key: 'statarb', label: 'STAT-ARB'     },
+    { key: 'mtf',     label: 'MTF'          },
   ] as const
 
   return (
@@ -110,9 +134,9 @@ export default function App() {
       ) : (
         /* ── TERMINAL VIEW ── */
         <div className="flex flex-1 overflow-hidden min-h-0">
-          {/* ─── LEFT: CHART AREA (flex-grow) ─── */}
-          <div className="flex flex-col flex-1 min-w-0 border-r border-border">
-            {/* Chart toolbar */}
+          {/* ─── LEFT: ONLY THE CHART + DRAWING TOOLBAR (flex-grow) ─── */}
+          <div className="flex flex-col flex-1 min-w-0 border-r border-border bg-black">
+            {/* Chart top toolbar (Timeframes, Candle styles, Refresh) */}
             <ChartToolbar
               chartType={chartType}
               interval={interval}
@@ -121,78 +145,84 @@ export default function App() {
               isLoading={isLoading}
             />
 
-            {/* Main price chart */}
-            <div className="flex-1 relative min-h-0 bg-black">
-              {candles.length === 0 && !isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
-                  <div className="text-center">
-                    <div className="text-zinc-400 font-mono text-sm mb-1">NO DATA AVAILABLE</div>
-                    <div className="text-2xs text-zinc-600 font-mono">Select symbol or click Refresh</div>
-                  </div>
-                </div>
-              )}
-              {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50 pointer-events-none">
-                  <div className="flex items-center gap-2 text-zinc-400 text-xs">
-                    <div className="w-2.5 h-2.5 bg-white animate-ping" />
-                    <span>FETCHING MARKET TICKS...</span>
-                  </div>
-                </div>
-              )}
-              <MainChart
-                candles={candles}
-                ema50={ema50}
-                chartType={chartType}
-                strategy={strategy}
-                livePrice={livePrice?.price ?? null}
-                onChartReady={setMainChart}
+            {/* Main Chart Body: Drawing Toolbar on left + Chart Canvas */}
+            <div className="flex-1 flex min-h-0 relative">
+              {/* Vertical Drawing Toolbar */}
+              <DrawingToolbar
+                activeTool={activeTool}
+                onSelectTool={setActiveTool}
+                onClear={handleClearDrawings}
+                onUndo={handleUndoDrawing}
+                drawingCount={drawings.length}
               />
-            </div>
 
-            {/* Stoch RSI sub-chart */}
-            <div className="h-32 border-t border-border flex-shrink-0 bg-black">
-              <StochRSIChart
-                data={stochrsi}
-                mainChart={mainChart}
-              />
-            </div>
-
-            {/* ── Bottom: Trade Steps / News ── */}
-            <div className="h-44 border-t border-border flex flex-shrink-0 min-h-0 bg-black">
-              {/* Execution Steps panel */}
-              <div className="flex-1 min-w-0 border-r border-border flex flex-col overflow-hidden">
-                <div className="panel-header flex items-center justify-between">
-                  <span>Execution Steps &amp; Adaptive Checklist</span>
-                  <span className="text-2xs text-zinc-500">{strategy?.adaptive_params?.mode ?? 'BALANCED'}</span>
-                </div>
-                <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 text-2xs">
-                  {strategy?.steps ? strategy.steps.map((step, i) => (
-                    <div key={i} className="text-zinc-300 font-mono leading-relaxed flex items-start gap-1">
-                      <span className="text-zinc-600 font-bold">›</span>
-                      <span>{step}</span>
+              {/* Chart Canvas & Overlay Container */}
+              <div className="flex-1 relative min-h-0 bg-black overflow-hidden">
+                {candles.length === 0 && !isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/80">
+                    <div className="text-center">
+                      <div className="text-zinc-400 font-mono text-sm mb-1">NO DATA AVAILABLE</div>
+                      <div className="text-2xs text-zinc-600 font-mono">Select symbol or click Refresh</div>
                     </div>
-                  )) : (
-                    <div className="text-zinc-600 font-mono">No steps — awaiting signal</div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                )}
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/50 pointer-events-none">
+                    <div className="flex items-center gap-2 text-zinc-400 text-xs">
+                      <div className="w-2.5 h-2.5 bg-white animate-ping" />
+                      <span>FETCHING MARKET TICKS...</span>
+                    </div>
+                  </div>
+                )}
 
-              {/* News panel */}
-              <div className="w-80 flex-shrink-0 overflow-hidden">
-                <NewsPanel news={news} loading={newsQuery.isLoading} />
+                {/* Main Candlestick / HA Chart */}
+                <MainChart
+                  candles={candles}
+                  ema50={ema50}
+                  chartType={chartType}
+                  strategy={strategy}
+                  livePrice={livePrice?.price ?? null}
+                  onChartReady={setMainChart}
+                />
+
+                {/* Interactive Drawing Overlay (Trendline, Horizontal, Fib, Rect, Position) */}
+                <DrawingOverlay
+                  activeTool={activeTool}
+                  drawings={drawings}
+                  onAddDrawing={handleAddDrawing}
+                  onToolUsed={() => {
+                    // Optional: return to cursor after single action
+                    if (activeTool === 'horizontal') setActiveTool('cursor')
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Synchronized Stoch RSI sub-chart oscillator */}
+            <div className="h-32 border-t border-border flex-shrink-0 bg-black flex">
+              <div className="w-10 bg-zinc-950 border-r border-zinc-900 flex-shrink-0 flex items-center justify-center">
+                <span className="text-[9px] text-zinc-600 -rotate-90 whitespace-nowrap font-bold tracking-widest">
+                  STOCH RSI
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <StochRSIChart
+                  data={stochrsi}
+                  mainChart={mainChart}
+                />
               </div>
             </div>
           </div>
 
-          {/* ─── RIGHT: PANEL TABS (fixed width 310px) ─── */}
-          <div className="w-80 flex-shrink-0 flex flex-col overflow-hidden bg-black border-l border-border">
+          {/* ─── RIGHT SIDEBAR: STEPS & CURRENCY NEWS FEED (fixed width 380px) ─── */}
+          <div className="w-96 flex-shrink-0 flex flex-col overflow-hidden bg-black border-l border-border">
             {/* Tab navigation */}
-            <div className="flex border-b border-border flex-shrink-0 bg-zinc-950">
+            <div className="flex border-b border-border flex-shrink-0 bg-zinc-950 overflow-x-auto scrollbar-none">
               {rightPanelTabs.map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex-1 py-2 text-2xs font-mono font-bold uppercase tracking-wider transition-colors border-r last:border-r-0 border-border ${
+                  className={`flex-1 min-w-[70px] py-2 text-2xs font-mono font-bold uppercase tracking-wider transition-colors border-r last:border-r-0 border-border whitespace-nowrap px-1 text-center ${
                     activeTab === tab.key
                       ? 'bg-white text-black'
                       : 'text-zinc-500 hover:text-white hover:bg-zinc-900'
@@ -204,103 +234,106 @@ export default function App() {
             </div>
 
             {/* Active panel content */}
-            <div className="flex-1 overflow-hidden min-h-0">
-              {activeTab === 'signal' && (
-                <div className="h-full overflow-y-auto">
-                  <SignalPanel strategy={strategy} loading={strategyQuery.isLoading} />
+            <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
+              {/* Mode 1: SPLIT (Steps on top 50%, News on bottom 50%) */}
+              {activeTab === 'split' && (
+                <div className="flex-1 flex flex-col min-h-0 divide-y divide-border">
+                  <div className="h-1/2 min-h-0 overflow-hidden">
+                    <StepsPanel
+                      strategy={strategy}
+                      mtf={mtf}
+                      symbol={symbol.ticker}
+                      currentPrice={livePrice?.price ?? null}
+                      onLogSuccess={handleRefresh}
+                    />
+                  </div>
+                  <div className="h-1/2 min-h-0 overflow-hidden">
+                    <NewsPanel
+                      news={news}
+                      loading={newsQuery.isLoading}
+                      currentSymbol={symbol.ticker}
+                    />
+                  </div>
                 </div>
               )}
-              {activeTab === 'ai' && (
-                <div className="h-full overflow-y-auto">
-                  <AIConfirmationPanel strategy={strategy} loading={strategyQuery.isLoading} />
+
+              {/* Mode 2: Full-Height STEPS */}
+              {activeTab === 'steps' && (
+                <div className="h-full overflow-hidden">
+                  <StepsPanel
+                    strategy={strategy}
+                    mtf={mtf}
+                    symbol={symbol.ticker}
+                    currentPrice={livePrice?.price ?? null}
+                    onLogSuccess={handleRefresh}
+                  />
                 </div>
               )}
+
+              {/* Mode 3: Full-Height NEWS with Currency filters & Colors */}
+              {activeTab === 'news' && (
+                <div className="h-full overflow-hidden">
+                  <NewsPanel
+                    news={news}
+                    loading={newsQuery.isLoading}
+                    currentSymbol={symbol.ticker}
+                  />
+                </div>
+              )}
+
+              {/* Mode 4: Full-Height TRADE CALL */}
               {activeTab === 'trade' && (
                 <div className="h-full overflow-y-auto">
                   <TradeCallPanel
                     strategy={strategy}
                     loading={strategyQuery.isLoading}
-                    symbolName={symbol.label}
-                    onLogSuccess={() => {
-                      qc.invalidateQueries({ queryKey: ['journal'] })
-                      qc.invalidateQueries({ queryKey: ['journalStats'] })
-                      qc.invalidateQueries({ queryKey: ['adaptiveParams'] })
-                    }}
+                    symbolName={symbol.ticker}
+                    onLogSuccess={handleRefresh}
                   />
                 </div>
               )}
+
+              {/* Mode 5: Full-Height AI EVAL */}
+              {activeTab === 'ai' && (
+                <div className="h-full overflow-y-auto">
+                  <AIConfirmationPanel
+                    strategy={strategy}
+                    loading={strategyQuery.isLoading}
+                  />
+                </div>
+              )}
+
+              {/* Mode 6: Full-Height STAT-ARB */}
               {activeTab === 'statarb' && (
                 <div className="h-full overflow-y-auto">
                   <StatArbPanel
                     strategy={strategy}
                     category={symbol.category}
                     currentSymbol={symbol.ticker}
-                    onLogSuccess={() => {
-                      qc.invalidateQueries({ queryKey: ['journal'] })
-                      qc.invalidateQueries({ queryKey: ['journalStats'] })
-                      qc.invalidateQueries({ queryKey: ['adaptiveParams'] })
-                    }}
+                    onLogSuccess={handleRefresh}
                   />
                 </div>
               )}
+
+              {/* Mode 7: Full-Height MTF MATRIX */}
               {activeTab === 'mtf' && (
                 <div className="h-full overflow-y-auto">
-                  <MultiTimeframePanel mtf={mtf} loading={mtfQuery.isLoading} />
+                  <MultiTimeframePanel
+                    mtf={mtf}
+                    loading={mtfQuery.isLoading}
+                  />
                 </div>
               )}
-              {activeTab === 'steps' && (
-                <div className="h-full overflow-y-auto panel text-xs font-mono">
-                  <div className="panel-header">Strategy Logic</div>
-                  <div className="p-3 space-y-2">
-                    {strategy?.setup?.length ? strategy.setup.map((r, i) => (
-                      <div key={i} className="text-2xs text-zinc-300 leading-relaxed border-b border-zinc-800 pb-1.5">
-                        {r}
-                      </div>
-                    )) : (
-                      <div className="text-2xs text-zinc-600 font-mono">No active setup — WAIT state</div>
-                    )}
 
-                    {strategy?.ha_pattern && (
-                      <div className="mt-3 border border-border p-2 bg-black">
-                        <div className="metric-label mb-1">Heikin Ashi Pattern</div>
-                        <div className="text-xs font-mono text-white">
-                          {strategy.ha_pattern.pattern}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Minimalist Strategy Rules */}
-                    <div className="mt-3 pt-2 border-t border-border space-y-1">
-                      <div className="text-2xs text-text-muted uppercase tracking-wider mb-1.5">
-                        Core Strategy Mandates
-                      </div>
-                      {[
-                        '50 EMA Support/Resistance Pullback',
-                        'StochRSI Oversold/Overbought Exhaustion',
-                        'Wait if StochRSI in Middle Zone (40–60)',
-                        'Range-Bound Breakout in Extreme Zones',
-                        'Top-Up on Double Crosses or Mid Crossing',
-                        'Top-Down Alignment: 1D + 4H Trend, 1H Confirm, 15m Early Entry',
-                        'PCA Statistical Arbitrage Mean Reversion Confluence',
-                      ].map((r, i) => (
-                        <div key={i} className="text-2xs text-zinc-400 flex items-start gap-1">
-                          <span className="text-zinc-600">▸</span>
-                          <span>{r}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              {/* Mode 8: Full-Height SIGNAL */}
+              {activeTab === 'signal' && (
+                <div className="h-full overflow-y-auto">
+                  <SignalPanel
+                    strategy={strategy}
+                    loading={strategyQuery.isLoading}
+                  />
                 </div>
               )}
-            </div>
-
-            {/* Bottom status bar */}
-            <div className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 border-t border-border bg-black text-2xs text-zinc-500">
-              <div className="flex items-center gap-1.5">
-                <div className={`w-1.5 h-1.5 ${ohlcvQuery.isSuccess ? 'bg-white' : 'bg-zinc-700'}`} />
-                <span>{ohlcvQuery.isSuccess ? 'STREAM CONNECTED' : 'CONNECTING...'}</span>
-              </div>
-              <span>{new Date().toLocaleTimeString('en-IN')}</span>
             </div>
           </div>
         </div>
