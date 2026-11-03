@@ -129,7 +129,7 @@ export default function MainChart({
       },
       rightPriceScale: {
         borderColor: THEME.border,
-        scaleMargins: { top: 0.08, bottom: 0.22 }, // leaves bottom 20% for volume overlay
+        scaleMargins: { top: 0.08, bottom: 0.08 },
       },
       timeScale: {
         borderColor:     THEME.border,
@@ -179,31 +179,7 @@ export default function MainChart({
 
     const displayCandles = chartType === 'heikin_ashi' ? toHeikinAshi(candles) : candles
 
-    // ── 1. VOLUME OVERLAY SERIES DIRECTLY ON MAIN CHART ──
-    const vs = chart.addHistogramSeries({
-      priceFormat: {
-        type: 'volume',
-      },
-      priceScaleId: '', // overlay
-      lastValueVisible: false,
-      priceLineVisible: false,
-    })
-    vs.priceScale().applyOptions({
-      scaleMargins: {
-        top: 0.78, // sits at the bottom 22% of the main chart
-        bottom: 0,
-      },
-    })
-    vs.setData(
-      displayCandles.map((c, idx) => ({
-        time: c.time as Time,
-        value: getCandleVolume(c, idx),
-        color: c.close >= c.open ? THEME.volUp : THEME.volDown,
-      })) as HistogramData[]
-    )
-    volumeSeriesRef.current = vs
-
-    // ── 2. PRICE SERIES (UP WHITE, DOWN DARK) ──
+    // ── 1. PRICE SERIES (UP WHITE, DOWN DARK) ──
     if (chartType === 'line') {
       const ls = chart.addLineSeries({
         color:                THEME.bull,
@@ -353,13 +329,6 @@ export default function MainChart({
     }
     if (ls) {
       ls.update({ time: updatedTime, value: livePrice })
-    }
-    if (vs) {
-      vs.update({
-        time:  updatedTime,
-        value: last.volume || 1000,
-        color: livePrice >= last.open ? THEME.volUp : THEME.volDown,
-      })
     }
   }, [livePrice]) // eslint-disable-line
 

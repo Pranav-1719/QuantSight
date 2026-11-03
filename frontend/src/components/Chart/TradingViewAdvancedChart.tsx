@@ -74,8 +74,17 @@ export default function TradingViewAdvancedChart({
       : `NASDAQ:${symbolTicker}`)
   const tvInterval = TV_INTERVAL_MAP[interval] || '15'
   const containerRef = useRef<HTMLDivElement>(null)
+  const lastSymbolRef = useRef<string>('')
+  const lastIntervalRef = useRef<string>('')
 
   useEffect(() => {
+    // Keep user customizations intact: do not re-init if symbol and interval have not changed
+    if (lastSymbolRef.current === tvSymbol && lastIntervalRef.current === tvInterval) {
+      return
+    }
+    lastSymbolRef.current = tvSymbol
+    lastIntervalRef.current = tvInterval
+
     const initWidget = () => {
       if (typeof (window as any).TradingView === 'undefined') return
 
@@ -102,7 +111,6 @@ export default function TradingViewAdvancedChart({
         studies: [
           'MASimple@tv-basicstudies',
           'StochasticRSI@tv-basicstudies',
-          'Volume@tv-basicstudies',
         ],
         studies_overrides: {
           // ── 50 EMA in Pure WHITE (strictly monochromatic, no red) ──
@@ -130,13 +138,6 @@ export default function TradingViewAdvancedChart({
           'stochastic.k.color': stochKColor,
           'stochastic.%d.color': stochDColor,
           'stochastic.d.color': stochDColor,
-
-          // ── Volume: Up Volume WHITE, Down Volume DARK GRAY/BLACK, MA GRAY ──
-          'volume.volume.color.0': '#27272a', // Down Volume = Dark Zinc
-          'volume.volume.color.1': '#ffffff', // Up Volume = White
-          'volume.volume.transparency': 35,
-          'volume.volume ma.color': '#a1a1aa', // Volume MA = Gray
-          'volume.volume ma.linewidth': 1,
         },
         overrides: {
           'paneProperties.background': '#000000',
@@ -183,7 +184,7 @@ export default function TradingViewAdvancedChart({
     } else {
       initWidget()
     }
-  }, [tvSymbol, tvInterval, stochKColor, stochDColor])
+  }, [tvSymbol, tvInterval])
 
   return (
     <div ref={containerRef} className="w-full h-full relative bg-black flex flex-col">
