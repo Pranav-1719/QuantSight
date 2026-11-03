@@ -151,13 +151,13 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
         </div>
 
         {/* Macro Title Filters (CPI, FOMC, NFP, PMI, GDP, RATE) */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-thin">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
           {MACRO_TAGS.map(m => (
             <button
               key={m.id}
               onClick={() => setMacroFilter(m.id)}
               className={clsx(
-                'px-2 py-0.5 text-[9px] font-bold border transition-colors whitespace-nowrap',
+                'px-2.5 py-1 text-2xs font-bold border transition-colors whitespace-nowrap',
                 macroFilter === m.id
                   ? 'bg-white text-black border-white'
                   : 'bg-black text-zinc-400 border-zinc-800 hover:text-white'
@@ -169,7 +169,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
         </div>
 
         {/* Currency Filter Tabs Bar (USD, JPY, EUR, etc.) */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-thin">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
           {CURRENCIES.map(c => {
             const isSelected = currFilter === c.id
             const isPairRelated = activeCurrencies.includes(c.id)
@@ -178,7 +178,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
                 key={c.id}
                 onClick={() => setCurrFilter(c.id)}
                 className={clsx(
-                  'px-2 py-1 text-2xs font-bold whitespace-nowrap border transition-all flex items-center gap-1',
+                  'px-2.5 py-1 text-xs font-bold whitespace-nowrap border transition-all flex items-center gap-1.5',
                   isSelected
                     ? 'bg-white text-black border-white'
                     : isPairRelated
@@ -188,7 +188,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
               >
                 {c.label}
                 {isPairRelated && !isSelected && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                 )}
               </button>
             )
@@ -202,12 +202,12 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search CPI, FOMC, Powell, NFP, PMI, Rate..."
-            className="w-full bg-black border border-zinc-800 text-white text-2xs px-2.5 py-1 focus:outline-none focus:border-white transition-colors"
+            className="w-full bg-black border border-zinc-800 text-white text-xs px-3 py-1.5 focus:outline-none focus:border-white transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1 text-zinc-500 hover:text-white text-2xs"
+              className="absolute right-2.5 top-1.5 text-zinc-400 hover:text-white text-xs font-bold"
             >
               ✕
             </button>
@@ -224,7 +224,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-48 text-zinc-600 text-2xs p-4 text-center">
+          <div className="flex flex-col items-center justify-center h-48 text-zinc-500 text-xs p-4 text-center">
             <div>NO MACRO EVENTS MATCHING FILTER</div>
             <button
               onClick={() => {
@@ -233,7 +233,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
                 setImpactFilter('ALL')
                 setSearchQuery('')
               }}
-              className="mt-2 text-white border border-zinc-700 px-2 py-0.5 hover:bg-zinc-900"
+              className="mt-2 text-white border border-zinc-700 px-3 py-1 hover:bg-zinc-900 text-xs font-bold"
             >
               RESET FILTERS
             </button>
@@ -250,52 +250,52 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
               <div
                 key={idx}
                 className={clsx(
-                  'p-3 hover:bg-zinc-950 transition-colors border-l-4',
+                  'p-3.5 hover:bg-zinc-950 transition-colors border-l-4',
                   impactStyle.border
                 )}
               >
                 {/* Header: Currency Pill, Time, Source, Impact Badge */}
-                <div className="flex items-center justify-between gap-2 mb-1.5 text-2xs">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="px-1.5 py-0.2 bg-zinc-800 text-white font-bold border border-zinc-700 text-[9px]">
+                <div className="flex items-center justify-between gap-2 mb-1.5 text-xs">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2 py-0.5 bg-zinc-800 text-white font-bold border border-zinc-700 text-2xs">
                       {currencyPill}
                     </span>
-                    <span className="text-zinc-300 font-bold">{item.time}</span>
+                    <span className="text-zinc-200 font-bold">{item.time}</span>
                     <span className="text-zinc-600">•</span>
-                    <span className="text-zinc-500">{item.source || 'Economic Calendar'}</span>
+                    <span className="text-zinc-400">{item.source || 'Economic Calendar'}</span>
                   </div>
 
                   <div
                     className={clsx(
-                      'flex items-center gap-1 px-1.5 py-0.5 border text-[9px] font-bold flex-shrink-0',
+                      'flex items-center gap-1.5 px-2 py-0.5 border text-2xs font-bold flex-shrink-0',
                       impactStyle.badge
                     )}
                   >
-                    <span className={clsx('w-1.5 h-1.5 rounded-full', impactStyle.dot)} />
+                    <span className={clsx('w-2 h-2 rounded-full', impactStyle.dot)} />
                     <span>{impactStyle.label}</span>
                   </div>
                 </div>
 
                 {/* Event Title */}
-                <div className="text-xs font-bold text-white leading-snug">
+                <div className="text-sm font-bold text-white leading-snug">
                   {item.title}
                 </div>
 
                 {/* Macro Economic Numbers: ACTUAL vs PREDICTED (FORECAST) vs PREVIOUS */}
                 {hasNumbers && (
-                  <div className="mt-2 grid grid-cols-3 gap-1.5 p-2 bg-zinc-950 border border-zinc-800 font-mono text-center">
+                  <div className="mt-2.5 grid grid-cols-3 gap-2 p-2.5 bg-zinc-950 border border-zinc-800 font-mono text-center">
                     {/* Actual */}
                     <div className="border-r border-zinc-800/80 pr-1">
-                      <div className="text-[9px] text-zinc-500 uppercase font-bold">ACTUAL</div>
+                      <div className="text-2xs text-zinc-400 uppercase font-bold">ACTUAL</div>
                       <div className={clsx(
-                        'text-xs font-bold mt-0.5',
+                        'text-sm font-black mt-0.5',
                         isBeat ? 'text-emerald-400' : isMiss ? 'text-red-400' : 'text-white'
                       )}>
                         {item.actual || '--'}
                       </div>
                       {item.surprise && item.surprise !== '--' && (
                         <div className={clsx(
-                          'text-[8px] font-bold mt-0.5',
+                          'text-2xs font-bold mt-0.5',
                           isBeat ? 'text-emerald-500' : isMiss ? 'text-red-500' : 'text-zinc-500'
                         )}>
                           {item.surprise} {isBeat ? '▲ BEAT' : isMiss ? '▼ MISS' : ''}
@@ -305,20 +305,20 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
 
                     {/* Predicted / Forecast */}
                     <div className="border-r border-zinc-800/80 px-1">
-                      <div className="text-[9px] text-zinc-400 uppercase font-bold">PREDICTED</div>
-                      <div className="text-xs font-bold text-amber-300 mt-0.5">
+                      <div className="text-2xs text-zinc-400 uppercase font-bold">PREDICTED</div>
+                      <div className="text-sm font-black text-amber-300 mt-0.5">
                         {item.forecast || '--'}
                       </div>
-                      <div className="text-[8px] text-zinc-500 mt-0.5">FORECAST</div>
+                      <div className="text-2xs text-zinc-500 mt-0.5 font-bold">FORECAST</div>
                     </div>
 
                     {/* Previous */}
                     <div className="pl-1">
-                      <div className="text-[9px] text-zinc-500 uppercase font-bold">PREVIOUS</div>
-                      <div className="text-xs font-bold text-zinc-300 mt-0.5">
+                      <div className="text-2xs text-zinc-400 uppercase font-bold">PREVIOUS</div>
+                      <div className="text-sm font-black text-zinc-300 mt-0.5">
                         {item.previous || '--'}
                       </div>
-                      <div className="text-[8px] text-zinc-600 mt-0.5">PRIOR PERIOD</div>
+                      <div className="text-2xs text-zinc-500 mt-0.5 font-bold">PRIOR</div>
                     </div>
                   </div>
                 )}

@@ -138,31 +138,31 @@ export default function StepsPanel({
   return (
     <div className="panel h-full flex flex-col overflow-hidden text-xs font-mono bg-black">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-3 py-2 bg-zinc-950 flex-shrink-0">
+      <div className="flex items-center justify-between border-b border-border px-3.5 py-2.5 bg-zinc-950 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <span className="font-bold uppercase tracking-wider text-white">Strategy Steps</span>
-          <span className="text-2xs bg-white text-black font-bold px-1 py-0.2">
+          <span className="font-bold uppercase tracking-wider text-white text-sm">Strategy Steps</span>
+          <span className="text-2xs bg-white text-black font-bold px-1.5 py-0.5">
             50 EMA + STOCH
           </span>
         </div>
-        <span className="text-2xs text-zinc-400 border border-zinc-800 px-1.5 py-0.5">
+        <span className="text-2xs text-zinc-300 font-bold border border-zinc-800 px-2 py-0.5">
           {strategy.adaptive_params?.mode || 'BALANCED'} MODE
         </span>
       </div>
 
       {/* Action Banner */}
-      <div className="p-3 border-b border-border bg-black flex-shrink-0">
+      <div className="p-3.5 border-b border-border bg-black flex-shrink-0">
         <div className="flex items-center justify-between">
-          <span className="text-2xs text-zinc-500 uppercase">Current Action Directive</span>
+          <span className="text-2xs text-zinc-400 uppercase font-bold">Current Action Directive</span>
           <span className={clsx(
-            'text-2xs font-bold px-1.5 py-0.5 border',
-            isBuy ? 'border-white text-white bg-zinc-900' : isSell ? 'border-zinc-500 text-zinc-200' : 'border-zinc-800 text-zinc-500'
+            'text-2xs font-bold px-2 py-0.5 border',
+            isBuy ? 'border-white text-white bg-zinc-900' : isSell ? 'border-zinc-500 text-zinc-200' : 'border-zinc-800 text-zinc-400'
           )}>
             {strategy.signal}
           </span>
         </div>
 
-        <div className="mt-1.5 text-xs font-bold text-white leading-snug">
+        <div className="mt-2 text-sm font-bold text-white leading-snug">
           {isBuy && '👉 ACTION: BUY SETUP QUALIFIED. Enter on candle open. Hold until TP or EMA break.'}
           {isSell && '👉 ACTION: SELL SETUP QUALIFIED. Enter on candle open. Hold until TP or EMA break.'}
           {isWait && '👉 ACTION: WAITING FOR CONFLUENCE. Monitor 50 EMA touch & StochRSI extreme hook.'}
@@ -173,52 +173,52 @@ export default function StepsPanel({
           <button
             onClick={handleLogTrade}
             disabled={logging}
-            className="w-full mt-2 py-1.5 bg-white text-black font-bold text-2xs border border-white hover:bg-zinc-200 transition-colors uppercase tracking-wider"
+            className="w-full mt-2.5 py-2.5 bg-white text-black font-black text-xs border border-white hover:bg-zinc-200 transition-colors uppercase tracking-wider shadow"
           >
             {logging ? 'RECORDING TRADE...' : `LOG ${isBuy ? 'BUY' : 'SELL'} CALL TO JOURNAL (1:${rr.toFixed(1)} R:R)`}
           </button>
         )}
 
         {loggedMsg && (
-          <div className="mt-2 text-2xs text-white border border-zinc-700 bg-zinc-950 p-1.5 text-center font-bold">
+          <div className="mt-2 text-xs text-white border border-zinc-700 bg-zinc-950 p-2 text-center font-bold">
             ✓ {loggedMsg}
           </div>
         )}
       </div>
 
       {/* Step by step checklist list */}
-      <div className="flex-1 overflow-y-auto divide-y divide-zinc-900 bg-black p-2 space-y-2">
+      <div className="flex-1 overflow-y-auto divide-y divide-zinc-900 bg-black p-2.5 space-y-2.5">
         {stepsList.map(st => {
           const isReady = st.status === 'READY'
           return (
             <div
               key={st.num}
               className={clsx(
-                'p-2.5 border transition-all text-2xs',
+                'p-3 border transition-all text-xs',
                 isReady
                   ? 'border-white bg-zinc-950'
                   : 'border-zinc-800 bg-black hover:border-zinc-700'
               )}
             >
               <div className="flex items-center justify-between">
-                <div className="font-bold text-white flex items-center gap-1.5">
+                <div className="font-bold text-white flex items-center gap-2">
                   <span className={clsx(
-                    'w-4 h-4 rounded-full flex items-center justify-center text-[10px]',
-                    isReady ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-400'
+                    'w-5 h-5 rounded-full flex items-center justify-center text-xs font-black',
+                    isReady ? 'bg-white text-black font-bold' : 'bg-zinc-800 text-zinc-300'
                   )}>
                     {st.num}
                   </span>
-                  <span>{st.title}</span>
+                  <span className="text-xs">{st.title}</span>
                 </div>
                 <span className={clsx(
-                  'px-1 py-0.2 text-[9px] font-bold border',
-                  isReady ? 'border-white text-white' : 'border-zinc-800 text-zinc-500'
+                  'px-2 py-0.5 text-2xs font-bold border',
+                  isReady ? 'border-white text-white' : 'border-zinc-800 text-zinc-400'
                 )}>
                   {st.badge}
                 </span>
               </div>
 
-              <div className="text-zinc-400 mt-1.5 leading-relaxed pl-5">
+              <div className="text-zinc-300 mt-2 leading-relaxed pl-7 text-xs">
                 {st.desc}
               </div>
             </div>
