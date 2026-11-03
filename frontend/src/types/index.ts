@@ -255,13 +255,19 @@ export interface LivePrice {
 
 export interface NewsItem {
   source: string
-  tag:    string
+  tag?:   string
   title:  string
-  desc:   string
+  event_type?: string
+  desc?:  string
   time:   string
   impact: 'HIGH' | 'MED' | 'LOW'
   currency?: string
   currencies?: string[]
+  actual?: string
+  forecast?: string
+  previous?: string
+  surprise?: string
+  surprise_type?: 'BEAT' | 'MISS' | 'IN_LINE'
 }
 
 export type DrawingTool =

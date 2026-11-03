@@ -40,7 +40,7 @@ const THEME = {
   bearBorder:  '#71717a',
   bullWick:    '#ffffff',
   bearWick:    '#71717a',
-  ema:         '#e4e4e7',
+  ema:         '#ef4444', // RED 50 EMA
   entry:       '#a1a1aa',
   sl:          '#71717a',
   tp:          '#ffffff',

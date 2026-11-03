@@ -1,5 +1,6 @@
 // components/Panels/NewsPanel.tsx
-// Live Multi-Source RSS News Feed with Currency Classification & Vivid Impact Colors
+// Institutional Macroeconomic Calendar & News Feed
+// Features: CPI, FOMC, NFP, GDP, PMI with ACTUAL, PREDICTED (FORECAST), PREVIOUS, and Vivid Impact Colors
 
 import React, { useState } from 'react'
 import clsx from 'clsx'
@@ -12,22 +13,33 @@ interface Props {
 }
 
 const CURRENCIES = [
-  { id: 'ALL', label: 'ALL NEWS' },
-  { id: 'USD', label: 'USD NEWS' },
-  { id: 'JPY', label: 'JPY NEWS' },
-  { id: 'EUR', label: 'EUR NEWS' },
-  { id: 'GBP', label: 'GBP NEWS' },
-  { id: 'INR', label: 'INR NEWS' },
+  { id: 'ALL', label: 'ALL MACRO' },
+  { id: 'USD', label: 'USD (CPI/FOMC)' },
+  { id: 'JPY', label: 'JPY (BOJ/PMI)' },
+  { id: 'EUR', label: 'EUR (ECB/CPI)' },
+  { id: 'GBP', label: 'GBP (BOE/CPI)' },
+  { id: 'INR', label: 'INR (RBI/CPI)' },
   { id: 'BTC', label: 'BTC / CRYPTO' },
   { id: 'COMMODITY', label: 'COMMODITIES' },
 ] as const
 
+const MACRO_TAGS = [
+  { id: 'ALL', label: 'ALL EVENTS' },
+  { id: 'CPI', label: 'CPI' },
+  { id: 'FOMC', label: 'FOMC / FED' },
+  { id: 'NFP', label: 'NFP / JOBS' },
+  { id: 'PMI', label: 'PMI' },
+  { id: 'GDP', label: 'GDP' },
+  { id: 'RATE', label: 'RATES' },
+] as const
+
 export default function NewsPanel({ news, loading, currentSymbol }: Props) {
   const [currFilter, setCurrFilter] = useState<string>('ALL')
+  const [macroFilter, setMacroFilter] = useState<string>('ALL')
   const [impactFilter, setImpactFilter] = useState<'ALL' | 'HIGH' | 'MED' | 'LOW'>('ALL')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Derive active symbol currencies (e.g. USDJPY=X -> USD, JPY)
+  // Derive active symbol currencies
   const activeCurrencies: string[] = []
   if (currentSymbol) {
     if (currentSymbol.includes('USD')) activeCurrencies.push('USD')
@@ -40,36 +52,41 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
 
   const items = news ?? []
 
-  // Filtering by currency, impact, and search query
+  // Filter items
   const filtered = items.filter(item => {
     // 1. Impact filter
-    if (impactFilter !== 'ALL' && item.impact !== impactFilter) {
-      return false
-    }
+    if (impactFilter !== 'ALL' && item.impact !== impactFilter) return false
 
     // 2. Currency filter
     if (currFilter !== 'ALL') {
-      const matchPrimary = item.currency === currFilter
-      const matchAll = item.currencies?.includes(currFilter)
-      const matchText = `${item.title} ${item.desc}`.toLowerCase().includes(currFilter.toLowerCase())
-      if (!matchPrimary && !matchAll && !matchText) {
-        return false
+      const matchCurr = item.currency === currFilter
+      const matchInText = `${item.title} ${item.desc}`.toLowerCase().includes(currFilter.toLowerCase())
+      if (!matchCurr && !matchInText) return false
+    }
+
+    // 3. Macro event type filter (CPI, FOMC, NFP, PMI, etc.)
+    if (macroFilter !== 'ALL') {
+      const titleLower = item.title.toLowerCase()
+      if (macroFilter === 'FOMC') {
+        if (!titleLower.includes('fomc') && !titleLower.includes('fed') && !titleLower.includes('powell')) return false
+      } else if (macroFilter === 'NFP') {
+        if (!titleLower.includes('nfp') && !titleLower.includes('payroll') && !titleLower.includes('unemployment') && !titleLower.includes('employment')) return false
+      } else if (macroFilter === 'RATE') {
+        if (!titleLower.includes('rate') && !titleLower.includes('boj') && !titleLower.includes('ecb') && !titleLower.includes('boe') && !titleLower.includes('rbi')) return false
+      } else {
+        if (!titleLower.includes(macroFilter.toLowerCase()) && item.event_type !== macroFilter) return false
       }
     }
 
-    // 3. Search query
+    // 4. Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
-      const inTitle = item.title.toLowerCase().includes(q)
-      const inDesc = item.desc?.toLowerCase().includes(q)
-      const inSource = item.source?.toLowerCase().includes(q)
-      if (!inTitle && !inDesc && !inSource) return false
+      if (!item.title.toLowerCase().includes(q) && !item.desc?.toLowerCase().includes(q)) return false
     }
 
     return true
   })
 
-  // Impact color styling helper
   const getImpactBadge = (impact: 'HIGH' | 'MED' | 'LOW') => {
     switch (impact) {
       case 'HIGH':
@@ -103,9 +120,9 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
       <div className="p-2.5 border-b border-border bg-zinc-950 flex flex-col gap-2 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-bold uppercase tracking-wider text-white">Live News Feed</span>
+            <span className="font-bold uppercase tracking-wider text-white">Macro Calendar &amp; News</span>
             <span className="text-2xs bg-red-950 text-red-400 border border-red-800 px-1 font-bold animate-pulse">
-              LIVE
+              CPI · FOMC · NFP
             </span>
           </div>
 
@@ -131,6 +148,24 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
               )
             })}
           </div>
+        </div>
+
+        {/* Macro Title Filters (CPI, FOMC, NFP, PMI, GDP, RATE) */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-thin">
+          {MACRO_TAGS.map(m => (
+            <button
+              key={m.id}
+              onClick={() => setMacroFilter(m.id)}
+              className={clsx(
+                'px-2 py-0.5 text-[9px] font-bold border transition-colors whitespace-nowrap',
+                macroFilter === m.id
+                  ? 'bg-white text-black border-white'
+                  : 'bg-black text-zinc-400 border-zinc-800 hover:text-white'
+              )}
+            >
+              {m.label}
+            </button>
+          ))}
         </div>
 
         {/* Currency Filter Tabs Bar (USD, JPY, EUR, etc.) */}
@@ -166,7 +201,7 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search news (e.g. Fed, CPI, BoJ, Rate)..."
+            placeholder="Search CPI, FOMC, Powell, NFP, PMI, Rate..."
             className="w-full bg-black border border-zinc-800 text-white text-2xs px-2.5 py-1 focus:outline-none focus:border-white transition-colors"
           />
           {searchQuery && (
@@ -180,20 +215,21 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
         </div>
       </div>
 
-      {/* News Headlines List */}
+      {/* Events List */}
       <div className="flex-1 overflow-y-auto divide-y divide-zinc-900 bg-black">
         {loading ? (
           <div className="p-3 space-y-2 animate-pulse">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-16 bg-zinc-950 border border-zinc-900" />
+              <div key={i} className="h-20 bg-zinc-950 border border-zinc-900" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-48 text-zinc-600 text-2xs p-4 text-center">
-            <div>NO HEADLINES MATCHING CURRENT FILTER</div>
+            <div>NO MACRO EVENTS MATCHING FILTER</div>
             <button
               onClick={() => {
                 setCurrFilter('ALL')
+                setMacroFilter('ALL')
                 setImpactFilter('ALL')
                 setSearchQuery('')
               }}
@@ -205,30 +241,30 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
         ) : (
           filtered.map((item, idx) => {
             const impactStyle = getImpactBadge(item.impact)
-            const currencyPill = item.currency || item.tag || 'GLOBAL'
+            const currencyPill = item.currency || 'USD'
+            const hasNumbers = item.actual || item.forecast || item.previous
+            const isBeat = item.surprise_type === 'BEAT'
+            const isMiss = item.surprise_type === 'MISS'
+
             return (
               <div
                 key={idx}
                 className={clsx(
-                  'p-3 hover:bg-zinc-950/80 transition-colors border-l-4',
+                  'p-3 hover:bg-zinc-950 transition-colors border-l-4',
                   impactStyle.border
                 )}
               >
-                {/* Top Meta: Source, Currency Tag, Time, Impact Badge */}
+                {/* Header: Currency Pill, Time, Source, Impact Badge */}
                 <div className="flex items-center justify-between gap-2 mb-1.5 text-2xs">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {/* Currency Tag */}
                     <span className="px-1.5 py-0.2 bg-zinc-800 text-white font-bold border border-zinc-700 text-[9px]">
                       {currencyPill}
                     </span>
-
-                    {/* Source */}
-                    <span className="text-zinc-400 font-bold">{item.source}</span>
+                    <span className="text-zinc-300 font-bold">{item.time}</span>
                     <span className="text-zinc-600">•</span>
-                    <span className="text-zinc-500">{item.time}</span>
+                    <span className="text-zinc-500">{item.source || 'Economic Calendar'}</span>
                   </div>
 
-                  {/* Impact Badge with Color */}
                   <div
                     className={clsx(
                       'flex items-center gap-1 px-1.5 py-0.5 border text-[9px] font-bold flex-shrink-0',
@@ -240,14 +276,56 @@ export default function NewsPanel({ news, loading, currentSymbol }: Props) {
                   </div>
                 </div>
 
-                {/* News Title */}
-                <div className="text-xs font-semibold text-zinc-100 leading-snug hover:text-white">
+                {/* Event Title */}
+                <div className="text-xs font-bold text-white leading-snug">
                   {item.title}
                 </div>
 
-                {/* News Description */}
+                {/* Macro Economic Numbers: ACTUAL vs PREDICTED (FORECAST) vs PREVIOUS */}
+                {hasNumbers && (
+                  <div className="mt-2 grid grid-cols-3 gap-1.5 p-2 bg-zinc-950 border border-zinc-800 font-mono text-center">
+                    {/* Actual */}
+                    <div className="border-r border-zinc-800/80 pr-1">
+                      <div className="text-[9px] text-zinc-500 uppercase font-bold">ACTUAL</div>
+                      <div className={clsx(
+                        'text-xs font-bold mt-0.5',
+                        isBeat ? 'text-emerald-400' : isMiss ? 'text-red-400' : 'text-white'
+                      )}>
+                        {item.actual || '--'}
+                      </div>
+                      {item.surprise && item.surprise !== '--' && (
+                        <div className={clsx(
+                          'text-[8px] font-bold mt-0.5',
+                          isBeat ? 'text-emerald-500' : isMiss ? 'text-red-500' : 'text-zinc-500'
+                        )}>
+                          {item.surprise} {isBeat ? '▲ BEAT' : isMiss ? '▼ MISS' : ''}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Predicted / Forecast */}
+                    <div className="border-r border-zinc-800/80 px-1">
+                      <div className="text-[9px] text-zinc-400 uppercase font-bold">PREDICTED</div>
+                      <div className="text-xs font-bold text-amber-300 mt-0.5">
+                        {item.forecast || '--'}
+                      </div>
+                      <div className="text-[8px] text-zinc-500 mt-0.5">FORECAST</div>
+                    </div>
+
+                    {/* Previous */}
+                    <div className="pl-1">
+                      <div className="text-[9px] text-zinc-500 uppercase font-bold">PREVIOUS</div>
+                      <div className="text-xs font-bold text-zinc-300 mt-0.5">
+                        {item.previous || '--'}
+                      </div>
+                      <div className="text-[8px] text-zinc-600 mt-0.5">PRIOR PERIOD</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
                 {item.desc && (
-                  <div className="text-2xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
+                  <div className="text-2xs text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
                     {item.desc}
                   </div>
                 )}

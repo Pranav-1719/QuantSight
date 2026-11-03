@@ -24,8 +24,8 @@ const THEME = {
   grid:    '#141416',
   border:  '#27272a',
   text:    '#71717a',
-  k:       '#ffffff',    // %K line — white
-  d:       '#71717a',    // %D line — gray
+  k:       '#ffffff',    // %K line — pure white
+  d:       '#ef4444',    // %D line — vivid red
   ob:      'rgba(255, 255, 255, 0.02)',
   os:      'rgba(255, 255, 255, 0.02)',
   ob_line: '#3f3f46',
